@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AddressAutocompleteInput } from './address-autocomplete-input'
 import type { AddressAutocompleteProvider, AddressSuggestion, SelectedAddress } from './types'
@@ -33,9 +33,11 @@ const mockSelectedAddress: SelectedAddress = {
 }
 
 function StatefulAddressInput({
+    dropdownPortal,
     provider,
     onAddressSelect,
 }: {
+    dropdownPortal?: boolean
     provider?: AddressAutocompleteProvider
     onAddressSelect?: (address: SelectedAddress) => void
 }) {
@@ -44,6 +46,7 @@ function StatefulAddressInput({
     return (
         <AddressAutocompleteInput
             debounceMs={0}
+            dropdownPortal={dropdownPortal}
             label="Address"
             placeholder="Start typing"
             provider={provider}
@@ -61,6 +64,11 @@ function createMockProvider(): AddressAutocompleteProvider {
         resetSession: vi.fn(),
     }
 }
+
+afterEach(() => {
+    cleanup()
+    vi.clearAllMocks()
+})
 
 describe('AddressAutocompleteInput', () => {
     it('renders a controlled address input', async () => {
@@ -122,5 +130,36 @@ describe('AddressAutocompleteInput', () => {
         await waitFor(() => {
             expect(input.value).toBe('13133 34th Street North, Clearwater, FL 33762, USA')
         })
+    })
+
+    it('renders the dropdown through document.body when dropdownPortal is enabled', async () => {
+        const user = userEvent.setup()
+        const provider = createMockProvider()
+        const { container } = render(<StatefulAddressInput dropdownPortal provider={provider} />)
+
+        const input = screen.getByLabelText('Address')
+        await user.type(input, '13133')
+
+        const listbox = await screen.findByRole('listbox')
+        expect(document.body.contains(listbox)).toBe(true)
+        expect(container.contains(listbox)).toBe(false)
+    })
+
+    it('connects combobox aria attributes to the highlighted option', async () => {
+        const user = userEvent.setup()
+        const provider = createMockProvider()
+
+        render(<StatefulAddressInput provider={provider} />)
+
+        const input = screen.getByLabelText('Address')
+        await user.type(input, '13133')
+
+        const listbox = await screen.findByRole('listbox')
+        const option = await screen.findByRole('option', { name: /13133 34th Street North/i })
+
+        expect(input.getAttribute('aria-expanded')).toBe('true')
+        expect(input.getAttribute('aria-controls')).toBe(listbox.id)
+        expect(input.getAttribute('aria-activedescendant')).toBe(option.id)
+        expect(option.getAttribute('aria-selected')).toBe('true')
     })
 })

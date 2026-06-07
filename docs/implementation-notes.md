@@ -59,6 +59,20 @@ The component owns UI lifecycle concerns:
 
 The component remains headless. It ships no required stylesheet. Consumers can use class names for simple styling or render props for fully custom suggestion/status markup.
 
+## Portal dropdown policy
+
+Inline dropdown rendering remains the default because it is the simplest and most predictable option for normal forms. Consumers can opt into `dropdownPortal` when the component is used inside dialogs, modal panels, drawers, or any container that may clip the list with `overflow: hidden`.
+
+When portal rendering is enabled, the component:
+
+- renders the dropdown into `document.body` unless `dropdownPortalContainer` is provided;
+- measures the input with `getBoundingClientRect()`;
+- applies fixed-position inline styles for `top`, `left`, and `width`;
+- updates that position on scroll and resize while the dropdown is open;
+- keeps the same listbox ID so `aria-controls` and `aria-activedescendant` continue to work across the portal boundary.
+
+The component does not implement a focus trap. Dialog libraries should continue to own focus trapping and modal semantics.
+
 ## Parser policy
 
 `parseGooglePlaceAddress()` should be conservative. It returns empty strings when Google omits address components and `null` for missing coordinates. It should not guess coordinates or invent address parts.

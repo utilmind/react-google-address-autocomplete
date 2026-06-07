@@ -12,12 +12,13 @@ This repository is in early implementation. The current package includes:
 - headless component API draft;
 - controlled input with a first-pass suggestions dropdown;
 - keyboard navigation for ArrowUp, ArrowDown, Enter, Escape, and Tab;
+- optional dropdown portal rendering for dialogs/modals;
 - selected-address TypeScript types;
 - tested Google place address parser;
 - browser-side Google Maps JavaScript loader;
 - browser-side Google Places Autocomplete Data API provider with mocked unit tests.
 
-The next major step is hardening the component UI: portal rendering, more ARIA/a11y review, disabled/read-only edge cases, and modal behavior.
+The next major step is hardening edge cases: disabled/read-only behavior, touch selection, more accessibility checks, and broader real-world demo coverage.
 
 ## Work plan
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { ChangeEventHandler, FocusEventHandler, KeyboardEventHandler, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 import type {
     AddressAutocompleteInputProps,
@@ -13,6 +14,13 @@ import type {
 const defaultDebounceMs = 250
 const defaultMaxSuggestions = 5
 const defaultMinQueryLength = 1
+const defaultDropdownPortalOffset = 6
+
+interface DropdownPosition {
+    left: number
+    top: number
+    width: number
+}
 
 export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
     const {
@@ -23,6 +31,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         className,
         inputClassName,
         dropdownClassName,
+        dropdownStyle,
         suggestionClassName,
         highlightedSuggestionClassName,
         statusMessageClassName,
@@ -42,6 +51,9 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         renderLoading,
         renderEmpty,
         renderError,
+        dropdownPortal = false,
+        dropdownPortalContainer,
+        dropdownPortalOffset = defaultDropdownPortalOffset,
         onBlur,
         onFocus,
         onKeyDown,
@@ -55,15 +67,21 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
     const inputId = id ?? generatedId
     const listboxId = `${inputId}-address-suggestions`
     const latestRequestIdRef = useRef(0)
+    const inputRef = useRef<HTMLInputElement | null>(null)
     const [status, setStatus] = useState<AddressAutocompleteStatus>('idle')
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [suggestions, setSuggestions] = useState<readonly AddressSuggestion[]>([])
     const [highlightedIndex, setHighlightedIndex] = useState(-1)
     const [error, setError] = useState<Error | null>(null)
+    const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null)
 
     const normalizedMinQueryLength = normalizeNonNegativeInteger(minQueryLength, defaultMinQueryLength)
     const normalizedDebounceMs = normalizeNonNegativeInteger(debounceMs, defaultDebounceMs)
     const normalizedMaxSuggestions = normalizePositiveInteger(maxSuggestions, defaultMaxSuggestions)
+    const normalizedDropdownPortalOffset = normalizeNonNegativeInteger(
+        dropdownPortalOffset,
+        defaultDropdownPortalOffset,
+    )
     const isInteractive = !disabled && !readOnly
     const trimmedValue = value.trim()
 
@@ -91,6 +109,41 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         }),
         [error, highlightedIndex, isDropdownOpen, status, suggestions],
     )
+
+    const shouldRenderDropdown = slotState.isOpen
+    const shouldRenderDropdownPortal = dropdownPortal && shouldRenderDropdown
+
+    const updateDropdownPosition = useCallback(() => {
+        const input = inputRef.current
+
+        if (!input) {
+            setDropdownPosition(null)
+            return
+        }
+
+        const rect = input.getBoundingClientRect()
+        setDropdownPosition({
+            left: rect.left,
+            top: rect.bottom + normalizedDropdownPortalOffset,
+            width: rect.width,
+        })
+    }, [normalizedDropdownPortalOffset])
+
+    useEffect(() => {
+        if (!shouldRenderDropdownPortal) {
+            setDropdownPosition(null)
+            return
+        }
+
+        updateDropdownPosition()
+        window.addEventListener('resize', updateDropdownPosition)
+        window.addEventListener('scroll', updateDropdownPosition, true)
+
+        return () => {
+            window.removeEventListener('resize', updateDropdownPosition)
+            window.removeEventListener('scroll', updateDropdownPosition, true)
+        }
+    }, [shouldRenderDropdownPortal, updateDropdownPosition])
 
     useEffect(() => {
         if (!provider || !isInteractive || !isDropdownOpen) {
@@ -254,7 +307,30 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         }
     }
 
-    const hasActiveDescendant = slotState.isOpen && highlightedIndex >= 0 && suggestions[highlightedIndex]
+    const hasActiveDescendant = shouldRenderDropdown && highlightedIndex >= 0 && Boolean(suggestions[highlightedIndex])
+    const dropdown = shouldRenderDropdown ? (
+        <AddressAutocompleteDropdown
+            dropdownClassName={dropdownClassName}
+            error={error}
+            highlightedIndex={highlightedIndex}
+            highlightedSuggestionClassName={highlightedSuggestionClassName}
+            listboxId={listboxId}
+            query={value}
+            renderEmpty={renderEmpty}
+            renderError={renderError}
+            renderLoading={renderLoading}
+            renderSuggestion={renderSuggestion}
+            selectSuggestion={selectSuggestion}
+            setHighlightedIndex={setHighlightedIndex}
+            slotState={slotState}
+            status={status}
+            statusMessageClassName={statusMessageClassName}
+            suggestionClassName={suggestionClassName}
+            suggestions={suggestions}
+            style={getDropdownStyle(dropdownStyle, shouldRenderDropdownPortal, dropdownPosition)}
+        />
+    ) : null
+    const portalContainer = shouldRenderDropdownPortal ? resolvePortalContainer(dropdownPortalContainer) : null
 
     return (
         <div className={className}>
@@ -262,10 +338,13 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
             <input
                 {...inputProps}
                 id={inputId}
+                ref={inputRef}
                 aria-activedescendant={hasActiveDescendant ? getSuggestionId(listboxId, highlightedIndex) : undefined}
                 aria-autocomplete="list"
-                aria-controls={slotState.isOpen ? listboxId : undefined}
-                aria-expanded={slotState.isOpen}
+                aria-busy={status === 'loading' || undefined}
+                aria-controls={shouldRenderDropdown ? listboxId : undefined}
+                aria-expanded={shouldRenderDropdown}
+                aria-haspopup="listbox"
                 autoComplete={autoComplete ?? 'off'}
                 className={inputClassName}
                 disabled={disabled}
@@ -278,43 +357,96 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                 onFocus={handleInputFocus}
                 onKeyDown={handleInputKeyDown}
             />
-            {slotState.isOpen ? (
-                <div id={listboxId} className={dropdownClassName} role="listbox">
-                    {status === 'loading' ? renderStatusMessage(renderLoading, slotState, statusMessageClassName, 'Loading…') : null}
-                    {status === 'empty' ? renderStatusMessage(renderEmpty, slotState, statusMessageClassName, 'No addresses found') : null}
-                    {status === 'error'
-                        ? renderStatusMessage(renderError, slotState, statusMessageClassName, error?.message || 'Address lookup failed')
-                        : null}
-                    {status === 'open'
-                        ? suggestions.map((suggestion, index) => {
-                              const isHighlighted = index === highlightedIndex
+            {portalContainer ? createPortal(dropdown, portalContainer) : dropdown}
+        </div>
+    )
+}
 
-                              return (
-                                  <div
-                                      key={suggestion.placeId}
-                                      id={getSuggestionId(listboxId, index)}
-                                      aria-selected={isHighlighted}
-                                      className={joinClassNames(
-                                          suggestionClassName,
-                                          isHighlighted && highlightedSuggestionClassName,
-                                      )}
-                                      role="option"
-                                      tabIndex={-1}
-                                      onClick={() => void selectSuggestion(suggestion)}
-                                      onMouseDown={(event) => event.preventDefault()}
-                                      onMouseEnter={() => setHighlightedIndex(index)}
-                                  >
-                                      {renderSuggestion ? (
-                                          renderSuggestion({ suggestion, index, isHighlighted, query: value })
-                                      ) : (
-                                          <DefaultSuggestion suggestion={suggestion} />
-                                      )}
-                                  </div>
-                              )
-                          })
-                        : null}
-                </div>
-            ) : null}
+interface AddressAutocompleteDropdownProps {
+    dropdownClassName: string | undefined
+    error: Error | null
+    highlightedIndex: number
+    highlightedSuggestionClassName: string | undefined
+    listboxId: string
+    query: string
+    renderEmpty: ((state: AddressAutocompleteSlotState) => ReactNode) | undefined
+    renderError: ((state: AddressAutocompleteSlotState) => ReactNode) | undefined
+    renderLoading: ((state: AddressAutocompleteSlotState) => ReactNode) | undefined
+    renderSuggestion: AddressAutocompleteInputProps['renderSuggestion']
+    selectSuggestion: (suggestion: AddressSuggestion) => Promise<void>
+    setHighlightedIndex: (index: number) => void
+    slotState: AddressAutocompleteSlotState
+    status: AddressAutocompleteStatus
+    statusMessageClassName: string | undefined
+    suggestionClassName: string | undefined
+    suggestions: readonly AddressSuggestion[]
+    style: AddressAutocompleteInputProps['dropdownStyle']
+}
+
+function AddressAutocompleteDropdown({
+    dropdownClassName,
+    error,
+    highlightedIndex,
+    highlightedSuggestionClassName,
+    listboxId,
+    query,
+    renderEmpty,
+    renderError,
+    renderLoading,
+    renderSuggestion,
+    selectSuggestion,
+    setHighlightedIndex,
+    slotState,
+    status,
+    statusMessageClassName,
+    suggestionClassName,
+    suggestions,
+    style,
+}: AddressAutocompleteDropdownProps) {
+    return (
+        <div id={listboxId} className={dropdownClassName} role="listbox" style={style}>
+            {status === 'loading'
+                ? renderStatusMessage(renderLoading, slotState, statusMessageClassName, 'Loading…')
+                : null}
+            {status === 'empty'
+                ? renderStatusMessage(renderEmpty, slotState, statusMessageClassName, 'No addresses found')
+                : null}
+            {status === 'error'
+                ? renderStatusMessage(
+                      renderError,
+                      slotState,
+                      statusMessageClassName,
+                      error?.message || 'Address lookup failed',
+                  )
+                : null}
+            {status === 'open'
+                ? suggestions.map((suggestion, index) => {
+                      const isHighlighted = index === highlightedIndex
+
+                      return (
+                          <div
+                              key={suggestion.placeId}
+                              id={getSuggestionId(listboxId, index)}
+                              aria-selected={isHighlighted}
+                              className={joinClassNames(
+                                  suggestionClassName,
+                                  isHighlighted && highlightedSuggestionClassName,
+                              )}
+                              role="option"
+                              tabIndex={-1}
+                              onClick={() => void selectSuggestion(suggestion)}
+                              onMouseDown={(event) => event.preventDefault()}
+                              onMouseEnter={() => setHighlightedIndex(index)}
+                          >
+                              {renderSuggestion ? (
+                                  renderSuggestion({ suggestion, index, isHighlighted, query })
+                              ) : (
+                                  <DefaultSuggestion suggestion={suggestion} />
+                              )}
+                          </div>
+                      )
+                  })
+                : null}
         </div>
     )
 }
@@ -339,6 +471,40 @@ function renderStatusMessage(
             {render ? render(state) : fallback}
         </div>
     )
+}
+
+function getDropdownStyle(
+    dropdownStyle: AddressAutocompleteInputProps['dropdownStyle'],
+    shouldRenderDropdownPortal: boolean,
+    dropdownPosition: DropdownPosition | null,
+): AddressAutocompleteInputProps['dropdownStyle'] {
+    if (!shouldRenderDropdownPortal || !dropdownPosition) {
+        return dropdownStyle
+    }
+
+    return {
+        position: 'fixed',
+        left: dropdownPosition.left,
+        top: dropdownPosition.top,
+        right: 'auto',
+        bottom: 'auto',
+        width: dropdownPosition.width,
+        ...dropdownStyle,
+    }
+}
+
+function resolvePortalContainer(
+    dropdownPortalContainer: AddressAutocompleteInputProps['dropdownPortalContainer'],
+): HTMLElement | null {
+    if (typeof document === 'undefined') {
+        return null
+    }
+
+    if (typeof dropdownPortalContainer === 'function') {
+        return dropdownPortalContainer()
+    }
+
+    return dropdownPortalContainer ?? document.body
 }
 
 function renderMatchedText(text: string, matches: readonly AddressTextMatch[]) {

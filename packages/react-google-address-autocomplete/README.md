@@ -4,7 +4,7 @@ Reusable React address autocomplete component powered by Google Places Autocompl
 
 ## Status
 
-Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, and supports basic keyboard navigation. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
+Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, and can render the dropdown through a portal for dialogs/modals. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
 
 ## Design decisions
 
@@ -53,6 +53,25 @@ export function AddressField() {
     )
 }
 ```
+
+## Portal dropdowns
+
+By default, the dropdown is rendered inline under the input. For dialogs, modals, and other containers with `overflow: hidden`, enable portal rendering:
+
+```tsx
+<AddressAutocompleteInput
+    dropdownClassName="addressDropdown"
+    dropdownPortal
+    dropdownStyle={{ zIndex: 1000 }}
+    inputClassName="addressInput"
+    label="Address"
+    provider={provider}
+    value={address}
+    onValueChange={setAddress}
+/>
+```
+
+When `dropdownPortal` is enabled, the dropdown is rendered into `document.body` by default and receives fixed-position inline styles that match the input's viewport position and width. Use `dropdownPortalContainer` to provide a custom container and `dropdownPortalOffset` to tune the vertical offset.
 
 ## Google provider
 

@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from 'react'
 
 export interface AddressTextMatch {
     startOffset: number
@@ -46,7 +46,10 @@ export interface AddressAutocompleteRequestOptions {
 }
 
 export interface AddressAutocompleteProvider {
-    getSuggestions: (query: string, options?: AddressAutocompleteRequestOptions) => Promise<readonly AddressSuggestion[]>
+    getSuggestions: (
+        query: string,
+        options?: AddressAutocompleteRequestOptions,
+    ) => Promise<readonly AddressSuggestion[]>
     selectSuggestion: (suggestion: AddressSuggestion) => Promise<SelectedAddress>
     resetSession?: () => void
 }
@@ -67,8 +70,12 @@ export interface AddressAutocompleteRenderSuggestionProps {
     query: string
 }
 
-export interface AddressAutocompleteInputProps
-    extends Omit<ComponentPropsWithoutRef<'input'>, 'children' | 'className' | 'onChange' | 'onSelect' | 'type' | 'value'> {
+export type AddressAutocompletePortalContainer = HTMLElement | null | (() => HTMLElement | null)
+
+export interface AddressAutocompleteInputProps extends Omit<
+    ComponentPropsWithoutRef<'input'>,
+    'children' | 'className' | 'onChange' | 'onSelect' | 'type' | 'value'
+> {
     value: string
     onValueChange: (value: string) => void
     onAddressSelect?: (address: SelectedAddress) => void
@@ -77,6 +84,7 @@ export interface AddressAutocompleteInputProps
     className?: string
     inputClassName?: string
     dropdownClassName?: string
+    dropdownStyle?: CSSProperties
     suggestionClassName?: string
     highlightedSuggestionClassName?: string
     statusMessageClassName?: string
@@ -94,4 +102,7 @@ export interface AddressAutocompleteInputProps
     renderLoading?: (state: AddressAutocompleteSlotState) => ReactNode
     renderEmpty?: (state: AddressAutocompleteSlotState) => ReactNode
     renderError?: (state: AddressAutocompleteSlotState) => ReactNode
+    dropdownPortal?: boolean
+    dropdownPortalContainer?: AddressAutocompletePortalContainer
+    dropdownPortalOffset?: number
 }

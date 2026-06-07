@@ -4,6 +4,7 @@ export { loadGoogleMapsJavaScriptApi } from './google-maps-loader'
 export { createGooglePlacesAutocompleteProvider } from './google-places-provider'
 export type {
     AddressAutocompleteInputProps,
+    AddressAutocompletePortalContainer,
     AddressAutocompleteProvider,
     AddressAutocompleteRenderSuggestionProps,
     AddressAutocompleteRequestOptions,

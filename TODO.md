@@ -23,7 +23,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Define the normalized selected-address result shape.
 - [x] Define the initial provider interface for suggestions and selected place details.
 - [x] Define the first pass of component prop names.
-- [ ] Review the public API after the real provider and dropdown are implemented.
+- [ ] Review the public API after the portal dropdown and demo modal are tested in real apps.
 - [ ] Define error states and retry behavior in the rendered component.
 - [ ] Define controlled value behavior for manual typing versus selected place data.
 - [ ] Decide whether `onAddressSelect` should fire only on dropdown selection or also on exact free-text geocode fallback.
@@ -58,7 +58,7 @@ This is the living implementation plan for the component repository. Update it o
 ## 4. React component behavior
 
 - [x] Implement first-pass suggestion dropdown.
-- [ ] Render dropdown through a portal option for dialogs/modals.
+- [x] Render dropdown through a portal option for dialogs/modals.
 - [x] Add first-pass keyboard navigation: ArrowUp, ArrowDown, Enter, Escape, Tab.
 - [x] Add mouse selection.
 - [ ] Verify touch selection on mobile devices.
@@ -69,14 +69,16 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add max suggestions limit.
 - [x] Add basic highlighted matched text rendering.
 - [x] Add first-pass ARIA combobox/listbox semantics and active descendant behavior.
-- [ ] Review accessibility semantics with a dedicated a11y pass.
+- [x] Add a first dedicated a11y pass for combobox/listbox IDs, `aria-controls`, `aria-expanded`, and `aria-activedescendant`.
+- [ ] Run a deeper accessibility pass with automated tooling and manual screen-reader checks.
 
 ## 5. Styling
 
 - [x] Decide default CSS strategy: no required stylesheet in v0; headless slots first.
 - [x] Expose initial class names and render props for custom UI.
 - [x] Add a small optional example stylesheet in the demo app.
-- [ ] Verify dropdown z-index behavior inside dialogs.
+- [x] Add a portal dropdown demo for a clipped modal/dialog shell.
+- [ ] Verify dropdown z-index behavior inside real app dialogs.
 - [ ] Verify narrow/mobile layout.
 
 ## 6. Demo app
@@ -85,7 +87,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add a basic demo page.
 - [ ] Add country restriction examples.
 - [ ] Add a form-fill example that populates address, city, state, ZIP, latitude, and longitude.
-- [ ] Add an example inside a modal/dialog.
+- [x] Add an example inside a modal/dialog.
 - [ ] Add error-state and empty-state examples.
 - [ ] Add README instructions for enabling Google Places API.
 
@@ -97,7 +99,10 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add loader tests.
 - [x] Add first component interaction tests with Testing Library.
 - [x] Add first keyboard selection test.
-- [ ] Add accessibility checks.
+- [x] Fix Testing Library cleanup so component tests do not leak DOM between tests.
+- [x] Add a portal rendering component test.
+- [x] Add first assertions for combobox/listbox ARIA wiring.
+- [ ] Add automated accessibility checks.
 - [ ] Add demo smoke build in CI.
 
 ## 8. Documentation
