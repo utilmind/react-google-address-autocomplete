@@ -77,6 +77,9 @@ export interface AddressAutocompleteInputProps
     className?: string
     inputClassName?: string
     dropdownClassName?: string
+    suggestionClassName?: string
+    highlightedSuggestionClassName?: string
+    statusMessageClassName?: string
     minQueryLength?: number
     debounceMs?: number
     maxSuggestions?: number

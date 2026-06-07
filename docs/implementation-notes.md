@@ -10,6 +10,8 @@ The package is intentionally not a jQuery/Twitter Typeahead port. The old implem
 - tested address parsing independent from UI rendering;
 - Google Places Autocomplete Data API as the first provider.
 
+The archived jQuery implementation is kept at [`../jquery-legacy/geo-dropdown.js`](../jquery-legacy/geo-dropdown.js). It should remain a reference file, not a source file imported by the package.
+
 ## Google Places Data API notes
 
 The browser-side provider uses the Maps JavaScript `places` library:
@@ -42,7 +44,20 @@ export interface AddressAutocompleteProvider {
 }
 ```
 
-This should be enough for browser-side Google support now and a future server-side proxy provider later without changing component consumers.
+This is enough for browser-side Google support now and a future server-side proxy provider later without changing component consumers.
+
+## React component policy
+
+The component owns UI lifecycle concerns:
+
+- debounce typing before calling `provider.getSuggestions()`;
+- limit rendered suggestions with `maxSuggestions`;
+- keep request IDs so stale component-level responses cannot reopen old results;
+- render loading, empty, and error slots;
+- close the dropdown and reset the provider session on blur, Escape, and Tab;
+- call `provider.selectSuggestion()` only when the user chooses a suggestion.
+
+The component remains headless. It ships no required stylesheet. Consumers can use class names for simple styling or render props for fully custom suggestion/status markup.
 
 ## Parser policy
 
@@ -56,11 +71,10 @@ City fallback order:
 4. `administrative_area_level_3`
 5. `administrative_area_level_2`
 
-
 ## Loader policy
 
 The first loader is browser-only and requires a restricted browser Google Maps JavaScript API key. It injects one script tag and requests the `places` library. A future server-side proxy provider can be added behind the same `AddressAutocompleteProvider` interface without changing the React component API.
 
 ## Out-of-order response policy
 
-The Google provider ignores stale autocomplete responses by default. If request A starts first and request B starts second, A will return an empty array if B has already become the latest request before A resolves. The React component will still need its own request lifecycle handling when the dropdown is implemented.
+The Google provider ignores stale autocomplete responses by default. If request A starts first and request B starts second, A will return an empty array if B has already become the latest request before A resolves. The React component also keeps its own request counter so stale responses cannot overwrite the visible dropdown state.

@@ -4,3 +4,4 @@ build/
 coverage/
 .vite/
 pnpm-lock.yaml
+jquery-legacy/

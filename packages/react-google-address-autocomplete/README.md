@@ -4,7 +4,7 @@ Reusable React address autocomplete component powered by Google Places Autocompl
 
 ## Status
 
-Early implementation. The exported component currently renders a controlled input. The package now includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider. The dropdown UI is the next implementation step.
+Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, and supports basic keyboard navigation. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
 
 ## Design decisions
 
@@ -15,6 +15,44 @@ Early implementation. The exported component currently renders a controlled inpu
 - Server-side proxy provider: deferred.
 - Country restriction: unrestricted by default. Pass `countryCodes` when an app wants to restrict results.
 
+## Minimal usage
+
+```tsx
+import { useMemo, useState } from 'react'
+import { AddressAutocompleteInput, createGooglePlacesAutocompleteProvider } from 'react-google-address-autocomplete'
+
+export function AddressField() {
+    const [address, setAddress] = useState('')
+
+    const provider = useMemo(
+        () =>
+            createGooglePlacesAutocompleteProvider({
+                apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+                defaultRequestOptions: {
+                    countryCodes: ['US'],
+                    language: 'en',
+                    region: 'US',
+                },
+            }),
+        [],
+    )
+
+    return (
+        <AddressAutocompleteInput
+            dropdownClassName="addressDropdown"
+            inputClassName="addressInput"
+            label="Address"
+            placeholder="Start typing an address"
+            provider={provider}
+            value={address}
+            onAddressSelect={(selectedAddress) => {
+                console.log(selectedAddress)
+            }}
+            onValueChange={setAddress}
+        />
+    )
+}
+```
 
 ## Google provider
 

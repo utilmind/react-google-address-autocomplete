@@ -1,11 +1,18 @@
-import { useId } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import type { ChangeEventHandler, FocusEventHandler, KeyboardEventHandler, ReactNode } from 'react'
 
-import type { AddressAutocompleteInputProps } from './types'
+import type {
+    AddressAutocompleteInputProps,
+    AddressAutocompleteRequestOptions,
+    AddressAutocompleteSlotState,
+    AddressAutocompleteStatus,
+    AddressSuggestion,
+    AddressTextMatch,
+} from './types'
 
-function markReservedPropsAsUsed(...values: readonly unknown[]) {
-    // These props are reserved for the upcoming autocomplete/dropdown implementation.
-    return values.length
-}
+const defaultDebounceMs = 250
+const defaultMaxSuggestions = 5
+const defaultMinQueryLength = 1
 
 export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
     const {
@@ -15,48 +22,239 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         label,
         className,
         inputClassName,
-        provider: _provider,
-        minQueryLength: _minQueryLength,
-        debounceMs: _debounceMs,
-        maxSuggestions: _maxSuggestions,
-        countryCodes: _countryCodes,
-        includedPrimaryTypes: _includedPrimaryTypes,
-        language: _language,
-        region: _region,
-        locationBias: _locationBias,
-        locationRestriction: _locationRestriction,
-        origin: _origin,
-        dropdownClassName: _dropdownClassName,
-        onAddressSelect: _onAddressSelect,
-        renderSuggestion: _renderSuggestion,
-        renderLoading: _renderLoading,
-        renderEmpty: _renderEmpty,
-        renderError: _renderError,
+        dropdownClassName,
+        suggestionClassName,
+        highlightedSuggestionClassName,
+        statusMessageClassName,
+        provider,
+        minQueryLength = defaultMinQueryLength,
+        debounceMs = defaultDebounceMs,
+        maxSuggestions = defaultMaxSuggestions,
+        countryCodes,
+        includedPrimaryTypes,
+        language,
+        region,
+        locationBias,
+        locationRestriction,
+        origin,
+        onAddressSelect,
+        renderSuggestion,
+        renderLoading,
+        renderEmpty,
+        renderError,
+        onBlur,
+        onFocus,
+        onKeyDown,
+        disabled,
+        readOnly,
+        autoComplete,
         ...inputProps
     } = props
 
     const generatedId = useId()
     const inputId = id ?? generatedId
+    const listboxId = `${inputId}-address-suggestions`
+    const latestRequestIdRef = useRef(0)
+    const [status, setStatus] = useState<AddressAutocompleteStatus>('idle')
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const [suggestions, setSuggestions] = useState<readonly AddressSuggestion[]>([])
+    const [highlightedIndex, setHighlightedIndex] = useState(-1)
+    const [error, setError] = useState<Error | null>(null)
 
-    markReservedPropsAsUsed(
-        _provider,
-        _minQueryLength,
-        _debounceMs,
-        _maxSuggestions,
-        _countryCodes,
-        _includedPrimaryTypes,
-        _language,
-        _region,
-        _locationBias,
-        _locationRestriction,
-        _origin,
-        _dropdownClassName,
-        _onAddressSelect,
-        _renderSuggestion,
-        _renderLoading,
-        _renderEmpty,
-        _renderError,
+    const normalizedMinQueryLength = normalizeNonNegativeInteger(minQueryLength, defaultMinQueryLength)
+    const normalizedDebounceMs = normalizeNonNegativeInteger(debounceMs, defaultDebounceMs)
+    const normalizedMaxSuggestions = normalizePositiveInteger(maxSuggestions, defaultMaxSuggestions)
+    const isInteractive = !disabled && !readOnly
+    const trimmedValue = value.trim()
+
+    const requestOptions = useMemo<AddressAutocompleteRequestOptions>(
+        () => ({
+            countryCodes,
+            includedPrimaryTypes,
+            language,
+            region,
+            locationBias,
+            locationRestriction,
+            origin,
+        }),
+        [countryCodes, includedPrimaryTypes, language, region, locationBias, locationRestriction, origin],
     )
+
+    const slotState = useMemo<AddressAutocompleteSlotState>(
+        () => ({
+            status,
+            isOpen: isDropdownOpen && status !== 'idle',
+            isLoading: status === 'loading',
+            highlightedIndex,
+            suggestions,
+            error,
+        }),
+        [error, highlightedIndex, isDropdownOpen, status, suggestions],
+    )
+
+    useEffect(() => {
+        if (!provider || !isInteractive || !isDropdownOpen) {
+            setStatus('idle')
+            setSuggestions([])
+            setHighlightedIndex(-1)
+            setError(null)
+            return
+        }
+
+        if (trimmedValue.length < normalizedMinQueryLength) {
+            latestRequestIdRef.current += 1
+            setStatus('idle')
+            setSuggestions([])
+            setHighlightedIndex(-1)
+            setError(null)
+            return
+        }
+
+        const requestId = latestRequestIdRef.current + 1
+        latestRequestIdRef.current = requestId
+        setStatus('loading')
+        setError(null)
+
+        const timerId = window.setTimeout(() => {
+            void provider
+                .getSuggestions(trimmedValue, requestOptions)
+                .then((nextSuggestions) => {
+                    if (requestId !== latestRequestIdRef.current) {
+                        return
+                    }
+
+                    const limitedSuggestions = nextSuggestions.slice(0, normalizedMaxSuggestions)
+                    setSuggestions(limitedSuggestions)
+                    setHighlightedIndex(limitedSuggestions.length ? 0 : -1)
+                    setStatus(limitedSuggestions.length ? 'open' : 'empty')
+                })
+                .catch((reason: unknown) => {
+                    if (requestId !== latestRequestIdRef.current) {
+                        return
+                    }
+
+                    setSuggestions([])
+                    setHighlightedIndex(-1)
+                    setError(toError(reason))
+                    setStatus('error')
+                })
+        }, normalizedDebounceMs)
+
+        return () => {
+            window.clearTimeout(timerId)
+        }
+    }, [
+        isDropdownOpen,
+        isInteractive,
+        normalizedMaxSuggestions,
+        normalizedMinQueryLength,
+        normalizedDebounceMs,
+        provider,
+        requestOptions,
+        trimmedValue,
+    ])
+
+    const closeDropdown = useCallback(() => {
+        latestRequestIdRef.current += 1
+        provider?.resetSession?.()
+        setIsDropdownOpen(false)
+        setStatus('idle')
+        setSuggestions([])
+        setHighlightedIndex(-1)
+        setError(null)
+    }, [provider])
+
+    const selectSuggestion = useCallback(
+        async (suggestion: AddressSuggestion) => {
+            if (!provider || disabled || readOnly) {
+                return
+            }
+
+            latestRequestIdRef.current += 1
+            setStatus('loading')
+            setError(null)
+
+            try {
+                const selectedAddress = await provider.selectSuggestion(suggestion)
+                onValueChange(selectedAddress.formattedAddress || suggestion.fullText)
+                onAddressSelect?.(selectedAddress)
+                setIsDropdownOpen(false)
+                setStatus('idle')
+                setSuggestions([])
+                setHighlightedIndex(-1)
+            } catch (reason) {
+                setError(toError(reason))
+                setStatus('error')
+                setIsDropdownOpen(true)
+            }
+        },
+        [disabled, onAddressSelect, onValueChange, provider, readOnly],
+    )
+
+    const handleInputFocus: FocusEventHandler<HTMLInputElement> = (event) => {
+        onFocus?.(event)
+
+        if (!event.defaultPrevented && isInteractive) {
+            setIsDropdownOpen(true)
+        }
+    }
+
+    const handleInputBlur: FocusEventHandler<HTMLInputElement> = (event) => {
+        onBlur?.(event)
+
+        if (!event.defaultPrevented) {
+            closeDropdown()
+        }
+    }
+
+    const handleInputKeyDown: KeyboardEventHandler<HTMLInputElement> = (event) => {
+        onKeyDown?.(event)
+
+        if (event.defaultPrevented || !isInteractive) {
+            return
+        }
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault()
+            setIsDropdownOpen(true)
+            setHighlightedIndex((currentIndex) => getNextHighlightedIndex(currentIndex, suggestions.length))
+            return
+        }
+
+        if (event.key === 'ArrowUp') {
+            event.preventDefault()
+            setHighlightedIndex((currentIndex) => getPreviousHighlightedIndex(currentIndex, suggestions.length))
+            return
+        }
+
+        const highlightedSuggestion = suggestions[highlightedIndex]
+
+        if (event.key === 'Enter' && status === 'open' && highlightedSuggestion) {
+            event.preventDefault()
+            void selectSuggestion(highlightedSuggestion)
+            return
+        }
+
+        if (event.key === 'Escape') {
+            event.preventDefault()
+            closeDropdown()
+            return
+        }
+
+        if (event.key === 'Tab') {
+            closeDropdown()
+        }
+    }
+
+    const handleInputChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+        onValueChange(event.currentTarget.value)
+
+        if (isInteractive) {
+            setIsDropdownOpen(true)
+        }
+    }
+
+    const hasActiveDescendant = slotState.isOpen && highlightedIndex >= 0 && suggestions[highlightedIndex]
 
     return (
         <div className={className}>
@@ -64,11 +262,156 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
             <input
                 {...inputProps}
                 id={inputId}
+                aria-activedescendant={hasActiveDescendant ? getSuggestionId(listboxId, highlightedIndex) : undefined}
+                aria-autocomplete="list"
+                aria-controls={slotState.isOpen ? listboxId : undefined}
+                aria-expanded={slotState.isOpen}
+                autoComplete={autoComplete ?? 'off'}
                 className={inputClassName}
+                disabled={disabled}
+                readOnly={readOnly}
+                role="combobox"
                 type="text"
                 value={value}
-                onChange={(event) => onValueChange(event.currentTarget.value)}
+                onBlur={handleInputBlur}
+                onChange={handleInputChange}
+                onFocus={handleInputFocus}
+                onKeyDown={handleInputKeyDown}
             />
+            {slotState.isOpen ? (
+                <div id={listboxId} className={dropdownClassName} role="listbox">
+                    {status === 'loading' ? renderStatusMessage(renderLoading, slotState, statusMessageClassName, 'Loading…') : null}
+                    {status === 'empty' ? renderStatusMessage(renderEmpty, slotState, statusMessageClassName, 'No addresses found') : null}
+                    {status === 'error'
+                        ? renderStatusMessage(renderError, slotState, statusMessageClassName, error?.message || 'Address lookup failed')
+                        : null}
+                    {status === 'open'
+                        ? suggestions.map((suggestion, index) => {
+                              const isHighlighted = index === highlightedIndex
+
+                              return (
+                                  <div
+                                      key={suggestion.placeId}
+                                      id={getSuggestionId(listboxId, index)}
+                                      aria-selected={isHighlighted}
+                                      className={joinClassNames(
+                                          suggestionClassName,
+                                          isHighlighted && highlightedSuggestionClassName,
+                                      )}
+                                      role="option"
+                                      tabIndex={-1}
+                                      onClick={() => void selectSuggestion(suggestion)}
+                                      onMouseDown={(event) => event.preventDefault()}
+                                      onMouseEnter={() => setHighlightedIndex(index)}
+                                  >
+                                      {renderSuggestion ? (
+                                          renderSuggestion({ suggestion, index, isHighlighted, query: value })
+                                      ) : (
+                                          <DefaultSuggestion suggestion={suggestion} />
+                                      )}
+                                  </div>
+                              )
+                          })
+                        : null}
+                </div>
+            ) : null}
         </div>
     )
+}
+
+function DefaultSuggestion({ suggestion }: { suggestion: AddressSuggestion }) {
+    return (
+        <div>
+            <div>{renderMatchedText(suggestion.mainText || suggestion.fullText, suggestion.mainTextMatches)}</div>
+            {suggestion.secondaryText ? <small>{suggestion.secondaryText}</small> : null}
+        </div>
+    )
+}
+
+function renderStatusMessage(
+    render: ((state: AddressAutocompleteSlotState) => ReactNode) | undefined,
+    state: AddressAutocompleteSlotState,
+    className: string | undefined,
+    fallback: string,
+) {
+    return (
+        <div className={className} role="status">
+            {render ? render(state) : fallback}
+        </div>
+    )
+}
+
+function renderMatchedText(text: string, matches: readonly AddressTextMatch[]) {
+    if (!matches.length) {
+        return text
+    }
+
+    const fragments: ReactNode[] = []
+    let cursor = 0
+
+    for (const match of matches) {
+        const startOffset = clamp(match.startOffset, 0, text.length)
+        const endOffset = clamp(match.endOffset, startOffset, text.length)
+
+        if (startOffset > cursor) {
+            fragments.push(text.slice(cursor, startOffset))
+        }
+
+        if (endOffset > startOffset) {
+            fragments.push(<mark key={`${startOffset}-${endOffset}`}>{text.slice(startOffset, endOffset)}</mark>)
+        }
+
+        cursor = endOffset
+    }
+
+    if (cursor < text.length) {
+        fragments.push(text.slice(cursor))
+    }
+
+    return fragments
+}
+
+function getNextHighlightedIndex(currentIndex: number, suggestionCount: number): number {
+    if (!suggestionCount) {
+        return -1
+    }
+
+    return currentIndex >= suggestionCount - 1 ? 0 : currentIndex + 1
+}
+
+function getPreviousHighlightedIndex(currentIndex: number, suggestionCount: number): number {
+    if (!suggestionCount) {
+        return -1
+    }
+
+    return currentIndex <= 0 ? suggestionCount - 1 : currentIndex - 1
+}
+
+function getSuggestionId(listboxId: string, index: number): string {
+    return `${listboxId}-option-${index}`
+}
+
+function normalizeNonNegativeInteger(value: number, fallback: number): number {
+    return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : fallback
+}
+
+function normalizePositiveInteger(value: number, fallback: number): number {
+    return Number.isFinite(value) ? Math.max(1, Math.floor(value)) : fallback
+}
+
+function toError(value: unknown): Error {
+    if (value instanceof Error) {
+        return value
+    }
+
+    return new Error(typeof value === 'string' ? value : 'Unknown address autocomplete error')
+}
+
+function joinClassNames(...classes: readonly (string | false | null | undefined)[]): string | undefined {
+    const className = classes.filter(Boolean).join(' ')
+    return className || undefined
+}
+
+function clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max)
 }

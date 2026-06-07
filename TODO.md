@@ -10,7 +10,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add the component package workspace.
 - [x] Add the demo app workspace.
 - [x] Add an initial placeholder React component and a smoke unit test.
-- [ ] Run `pnpm install` and commit the generated `pnpm-lock.yaml`.
+- [x] Run `pnpm install` and commit the generated `pnpm-lock.yaml`.
 - [x] Decide initial npm package name: `react-google-address-autocomplete`.
 - [x] Decide license before npm publication: MIT.
 
@@ -36,7 +36,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Implement an Autocomplete Data API provider.
 - [x] Create and reuse one `AutocompleteSessionToken` per user autocomplete session.
 - [x] Reset the session token after a place is selected.
-- [ ] Support query debounce.
+- [x] Support query debounce in the React component layer.
 - [x] Protect against out-of-order async responses.
 - [x] Support country restrictions, language, region, and location bias/restriction.
 - [x] Add provider-level unit tests with mocked Google globals.
@@ -57,29 +57,32 @@ This is the living implementation plan for the component repository. Update it o
 
 ## 4. React component behavior
 
-- [ ] Implement suggestion dropdown.
+- [x] Implement first-pass suggestion dropdown.
 - [ ] Render dropdown through a portal option for dialogs/modals.
-- [ ] Add keyboard navigation: ArrowUp, ArrowDown, Enter, Escape, Tab.
-- [ ] Add mouse and touch selection.
-- [ ] Add loading, empty, and error states.
-- [ ] Add disabled and read-only states.
-- [ ] Add minimum query length.
-- [ ] Add max suggestions limit.
-- [ ] Add highlighted matched text rendering.
-- [ ] Keep the component accessible with labels, ARIA combobox/listbox semantics, and active descendant behavior.
+- [x] Add first-pass keyboard navigation: ArrowUp, ArrowDown, Enter, Escape, Tab.
+- [x] Add mouse selection.
+- [ ] Verify touch selection on mobile devices.
+- [x] Add first-pass loading, empty, and error states.
+- [x] Add basic disabled and read-only handling.
+- [ ] Add deeper disabled and read-only interaction tests.
+- [x] Add minimum query length.
+- [x] Add max suggestions limit.
+- [x] Add basic highlighted matched text rendering.
+- [x] Add first-pass ARIA combobox/listbox semantics and active descendant behavior.
+- [ ] Review accessibility semantics with a dedicated a11y pass.
 
 ## 5. Styling
 
 - [x] Decide default CSS strategy: no required stylesheet in v0; headless slots first.
 - [x] Expose initial class names and render props for custom UI.
-- [ ] Add a small optional example stylesheet in the demo app.
+- [x] Add a small optional example stylesheet in the demo app.
 - [ ] Verify dropdown z-index behavior inside dialogs.
 - [ ] Verify narrow/mobile layout.
 
 ## 6. Demo app
 
-- [ ] Add `.env` support for a browser Google Maps API key.
-- [ ] Add a basic demo page.
+- [x] Add `.env` support for a browser Google Maps API key.
+- [x] Add a basic demo page.
 - [ ] Add country restriction examples.
 - [ ] Add a form-fill example that populates address, city, state, ZIP, latitude, and longitude.
 - [ ] Add an example inside a modal/dialog.
@@ -92,21 +95,21 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add parser unit tests.
 - [x] Add provider tests with mocked Google APIs.
 - [x] Add loader tests.
-- [ ] Add component interaction tests with Testing Library.
-- [ ] Add keyboard navigation tests.
+- [x] Add first component interaction tests with Testing Library.
+- [x] Add first keyboard selection test.
 - [ ] Add accessibility checks.
 - [ ] Add demo smoke build in CI.
 
 ## 8. Documentation
 
-- [ ] Document installation.
-- [ ] Document minimal usage.
+- [x] Document installation.
+- [x] Document minimal usage.
 - [ ] Document API key and Google Cloud setup.
 - [x] Document session token behavior.
 - [ ] Document billing-related caveats.
 - [ ] Document Next.js usage.
-- [ ] Document Vite usage.
-- [ ] Document styling customization.
+- [x] Document Vite usage through the demo app.
+- [x] Document first-pass styling customization through class names and demo CSS.
 - [x] Document address result shape in the package README.
 - [ ] Document known limitations.
 
@@ -119,6 +122,12 @@ This is the living implementation plan for the component repository. Update it o
 - [ ] Publish `0.1.0-alpha.0`.
 - [ ] Test install from npm in the machine shop Next.js project.
 - [ ] Publish `1.0.0` after API stabilization.
+
+## Legacy reference archive
+
+- [x] Keep the old jQuery/Twitter Typeahead implementation under `jquery-legacy/geo-dropdown.js` for historical reference.
+- [x] Exclude `jquery-legacy/` from Prettier so the archived file remains untouched.
+- [x] Link the legacy file from the root README.
 
 ## Open decisions
 
