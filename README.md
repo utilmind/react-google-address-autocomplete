@@ -12,9 +12,11 @@ This repository is in early implementation. The current package includes:
 - headless component API draft;
 - controlled input placeholder;
 - selected-address TypeScript types;
-- tested Google place address parser.
+- tested Google place address parser;
+- browser-side Google Maps JavaScript loader;
+- browser-side Google Places Autocomplete Data API provider with mocked unit tests.
 
-The next major step is the browser-side Google Places provider.
+The next major step is connecting the provider to the React component and implementing dropdown behavior.
 
 ## Work plan
 

@@ -12,7 +12,7 @@ The package is intentionally not a jQuery/Twitter Typeahead port. The old implem
 
 ## Google Places Data API notes
 
-The browser-side provider should use the Maps JavaScript `places` library:
+The browser-side provider uses the Maps JavaScript `places` library:
 
 1. Load Maps JavaScript API with the `places` library available.
 2. Use `google.maps.importLibrary('places')`.
@@ -22,7 +22,9 @@ The browser-side provider should use the Maps JavaScript `places` library:
 6. Call `place.fetchFields()` with the minimal fields needed by this package.
 7. Reset the session token after a successful selection.
 
-Likely detail fields:
+The first provider implementation intentionally keeps `PlacePrediction` objects in a private `placeId -> prediction` cache. This keeps the public `AddressSuggestion` shape provider-neutral while still allowing `selectSuggestion()` to call `toPlace()` on the original Google prediction. Consumers should select suggestions returned by the same provider instance and not persist suggestions across sessions.
+
+Default detail fields:
 
 ```ts
 const placeFields = ['id', 'formattedAddress', 'addressComponents', 'location']
@@ -53,3 +55,12 @@ City fallback order:
 3. `sublocality_level_1`
 4. `administrative_area_level_3`
 5. `administrative_area_level_2`
+
+
+## Loader policy
+
+The first loader is browser-only and requires a restricted browser Google Maps JavaScript API key. It injects one script tag and requests the `places` library. A future server-side proxy provider can be added behind the same `AddressAutocompleteProvider` interface without changing the React component API.
+
+## Out-of-order response policy
+
+The Google provider ignores stale autocomplete responses by default. If request A starts first and request B starts second, A will return an empty array if B has already become the latest request before A resolves. The React component will still need its own request lifecycle handling when the dropdown is implemented.

@@ -31,15 +31,17 @@ This is the living implementation plan for the component repository. Update it o
 
 ## 2. Google Places provider
 
-- [ ] Add a small Google Maps JS loader.
-- [ ] Load the `places` library with `google.maps.importLibrary('places')`.
-- [ ] Implement an Autocomplete Data API provider.
-- [ ] Create and reuse one `AutocompleteSessionToken` per user autocomplete session.
-- [ ] Reset the session token after a place is selected.
+- [x] Add a small Google Maps JS loader.
+- [x] Load the `places` library with `google.maps.importLibrary('places')`.
+- [x] Implement an Autocomplete Data API provider.
+- [x] Create and reuse one `AutocompleteSessionToken` per user autocomplete session.
+- [x] Reset the session token after a place is selected.
 - [ ] Support query debounce.
-- [ ] Protect against out-of-order async responses.
-- [ ] Support country restrictions, language, region, and location bias/restriction.
-- [ ] Add provider-level unit tests with mocked Google globals.
+- [x] Protect against out-of-order async responses.
+- [x] Support country restrictions, language, region, and location bias/restriction.
+- [x] Add provider-level unit tests with mocked Google globals.
+- [x] Add loader unit tests for existing globals and script injection.
+- [ ] Revisit provider error classes after component-level error rendering is implemented.
 
 ## 3. Address parsing
 
@@ -88,7 +90,8 @@ This is the living implementation plan for the component repository. Update it o
 
 - [x] Add an initial smoke unit test for the placeholder component.
 - [x] Add parser unit tests.
-- [ ] Add provider tests with mocked Google APIs.
+- [x] Add provider tests with mocked Google APIs.
+- [x] Add loader tests.
 - [ ] Add component interaction tests with Testing Library.
 - [ ] Add keyboard navigation tests.
 - [ ] Add accessibility checks.
@@ -99,7 +102,7 @@ This is the living implementation plan for the component repository. Update it o
 - [ ] Document installation.
 - [ ] Document minimal usage.
 - [ ] Document API key and Google Cloud setup.
-- [ ] Document session token behavior.
+- [x] Document session token behavior.
 - [ ] Document billing-related caveats.
 - [ ] Document Next.js usage.
 - [ ] Document Vite usage.

@@ -4,7 +4,7 @@ Reusable React address autocomplete component powered by Google Places Autocompl
 
 ## Status
 
-Early implementation. The exported component currently renders a controlled input, and the package now includes the initial public types plus a tested Google address parser. The real Google Places provider and dropdown UI are the next implementation steps.
+Early implementation. The exported component currently renders a controlled input. The package now includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider. The dropdown UI is the next implementation step.
 
 ## Design decisions
 
@@ -14,6 +14,27 @@ Early implementation. The exported component currently renders a controlled inpu
 - Google integration: browser-side Google Maps JavaScript API key first.
 - Server-side proxy provider: deferred.
 - Country restriction: unrestricted by default. Pass `countryCodes` when an app wants to restrict results.
+
+
+## Google provider
+
+```ts
+import { createGooglePlacesAutocompleteProvider } from 'react-google-address-autocomplete'
+
+const provider = createGooglePlacesAutocompleteProvider({
+    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    defaultRequestOptions: {
+        countryCodes: ['US'],
+        language: 'en',
+        region: 'US',
+    },
+})
+
+const suggestions = await provider.getSuggestions('13133 34th Street North')
+const selectedAddress = await provider.selectSuggestion(suggestions[0])
+```
+
+The provider loads the Google Maps JavaScript API in the browser, imports the `places` library, calls `AutocompleteSuggestion.fetchAutocompleteSuggestions()`, and fetches selected place details through the original `PlacePrediction`. It creates one Google `AutocompleteSessionToken` per autocomplete session and resets that token after a successful selection.
 
 ## Selected address shape
 
