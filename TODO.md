@@ -11,19 +11,23 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add the demo app workspace.
 - [x] Add an initial placeholder React component and a smoke unit test.
 - [ ] Run `pnpm install` and commit the generated `pnpm-lock.yaml`.
-- [ ] Decide final npm package name.
-- [ ] Decide license before npm publication.
+- [x] Decide initial npm package name: `react-google-address-autocomplete`.
+- [x] Decide license before npm publication: MIT.
 
 ## 1. Public API design
 
-- [ ] Finalize the component prop names.
-- [ ] Decide whether the package should be mostly headless or include default styles.
-- [ ] Define the normalized selected-address result shape.
-- [ ] Define error states and retry behavior.
+- [x] Select the initial package direction: headless React component with class names and render props.
+- [x] Select browser-side Google Maps JS key as the initial provider direction.
+- [x] Defer server-side proxy provider until a later version.
+- [x] Select default country behavior: no default country restriction.
+- [x] Define the normalized selected-address result shape.
+- [x] Define the initial provider interface for suggestions and selected place details.
+- [x] Define the first pass of component prop names.
+- [ ] Review the public API after the real provider and dropdown are implemented.
+- [ ] Define error states and retry behavior in the rendered component.
 - [ ] Define controlled value behavior for manual typing versus selected place data.
 - [ ] Decide whether `onAddressSelect` should fire only on dropdown selection or also on exact free-text geocode fallback.
-- [ ] Decide which Google request options should be exposed directly.
-- [ ] Decide whether the package should support a server-side proxy provider in addition to browser-side Google Maps JS.
+- [ ] Decide which Google request options should be exposed directly beyond the current first pass.
 
 ## 2. Google Places provider
 
@@ -39,13 +43,15 @@ This is the living implementation plan for the component repository. Update it o
 
 ## 3. Address parsing
 
-- [ ] Implement `parseGooglePlaceAddress()`.
-- [ ] Map Google address components to `addressLine1`, `addressLine2`, `city`, `state`, `stateCode`, `postalCode`, `country`, and `countryCode`.
-- [ ] Extract latitude and longitude from selected place details.
-- [ ] Add unit tests for US addresses.
-- [ ] Add unit tests for addresses without street number.
-- [ ] Add unit tests for ZIP+4 and missing postal code cases.
-- [ ] Add unit tests for non-US addresses.
+- [x] Implement `parseGooglePlaceAddress()`.
+- [x] Map Google address components to `addressLine1`, `addressLine2`, `city`, `state`, `stateCode`, `postalCode`, `country`, and `countryCode`.
+- [x] Extract latitude and longitude from selected place details.
+- [x] Add unit tests for US addresses.
+- [x] Add unit tests for addresses without street number.
+- [x] Add unit tests for ZIP+4 and missing postal code cases.
+- [x] Add unit tests for non-US addresses.
+- [ ] Add more international address fixtures after the provider returns real Place objects in the demo.
+- [ ] Decide whether the public result should include `postalCodeFull` in addition to `postalCode` and `postalCodeSuffix`.
 
 ## 4. React component behavior
 
@@ -62,9 +68,9 @@ This is the living implementation plan for the component repository. Update it o
 
 ## 5. Styling
 
-- [ ] Decide default CSS strategy.
-- [ ] Expose class names or slot render props for input, list, item, loading, empty, and error states.
-- [ ] Add a dark-mode-friendly default stylesheet if default styles are included.
+- [x] Decide default CSS strategy: no required stylesheet in v0; headless slots first.
+- [x] Expose initial class names and render props for custom UI.
+- [ ] Add a small optional example stylesheet in the demo app.
 - [ ] Verify dropdown z-index behavior inside dialogs.
 - [ ] Verify narrow/mobile layout.
 
@@ -81,7 +87,7 @@ This is the living implementation plan for the component repository. Update it o
 ## 7. Testing
 
 - [x] Add an initial smoke unit test for the placeholder component.
-- [ ] Add parser unit tests.
+- [x] Add parser unit tests.
 - [ ] Add provider tests with mocked Google APIs.
 - [ ] Add component interaction tests with Testing Library.
 - [ ] Add keyboard navigation tests.
@@ -98,7 +104,7 @@ This is the living implementation plan for the component repository. Update it o
 - [ ] Document Next.js usage.
 - [ ] Document Vite usage.
 - [ ] Document styling customization.
-- [ ] Document address result shape.
+- [x] Document address result shape in the package README.
 - [ ] Document known limitations.
 
 ## 9. Release and npm publication
@@ -113,9 +119,6 @@ This is the living implementation plan for the component repository. Update it o
 
 ## Open decisions
 
-- Package name: `react-google-address-autocomplete` is used as a temporary name.
-- License: not selected yet.
-- Default implementation direction: custom React UI powered by Google Places Autocomplete Data API.
-- Default country restriction: not selected yet.
-- Styling model: not selected yet.
-- Server proxy support: not selected yet.
+- Should `postalCodeFull` be added as a convenience field?
+- Should the provider expose a free-text geocode fallback, or should the component stay selection-only?
+- Should the component ship an optional default CSS file before `1.0.0`, or should styling remain fully user-owned?

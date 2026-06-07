@@ -4,7 +4,11 @@
     "description": "Reusable React address autocomplete component powered by Google Places Autocomplete Data API.",
     "type": "module",
     "sideEffects": false,
-    "files": ["dist", "README.md"],
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -31,5 +35,6 @@
     "peerDependencies": {
         "react": ">=18.3.0 <20",
         "react-dom": ">=18.3.0 <20"
-    }
+    },
+    "license": "MIT"
 }

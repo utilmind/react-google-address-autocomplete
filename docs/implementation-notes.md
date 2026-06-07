@@ -1,46 +1,55 @@
 # Implementation notes
 
-## Google API direction
+## Direction
 
-The component should target the modern Google Places Autocomplete Data API. The old jQuery implementation used a Typeahead-style UI over Google Places predictions, but this repository should implement the same product behavior in React rather than carrying over jQuery DOM mutation.
+The package is intentionally not a jQuery/Twitter Typeahead port. The old implementation is useful as a behavior reference, but this package should stay idiomatic React:
 
-Useful references:
+- controlled input value;
+- provider abstraction for suggestions and place selection;
+- headless dropdown rendering with class names and render props;
+- tested address parsing independent from UI rendering;
+- Google Places Autocomplete Data API as the first provider.
 
-- https://developers.google.com/maps/documentation/javascript/place-autocomplete-data
-- https://developers.google.com/maps/documentation/javascript/reference/autocomplete-data
-- https://developers.google.com/maps/documentation/javascript/place-autocomplete-new
+## Google Places Data API notes
 
-## High-level data flow
+The browser-side provider should use the Maps JavaScript `places` library:
 
-```txt
-User input
-    -> debounce
-    -> provider.fetchSuggestions(query, sessionToken)
-    -> dropdown suggestions
-    -> user selects place
-    -> provider.fetchPlaceDetails(place, sessionToken)
-    -> parse normalized address result
-    -> onAddressSelect(result)
-    -> reset session token
-```
+1. Load Maps JavaScript API with the `places` library available.
+2. Use `google.maps.importLibrary('places')`.
+3. Use `AutocompleteSuggestion.fetchAutocompleteSuggestions()` for predictions.
+4. Keep one `AutocompleteSessionToken` during a typing/selecting session.
+5. Convert the chosen prediction with `placePrediction.toPlace()`.
+6. Call `place.fetchFields()` with the minimal fields needed by this package.
+7. Reset the session token after a successful selection.
 
-## Initial normalized address fields
+Likely detail fields:
 
 ```ts
-interface SelectedAddress {
-    placeId: string
-    formattedAddress: string
-    addressLine1: string
-    addressLine2: string
-    city: string
-    state: string
-    stateCode: string
-    postalCode: string
-    country: string
-    countryCode: string
-    latitude: number | null
-    longitude: number | null
+const placeFields = ['id', 'formattedAddress', 'addressComponents', 'location']
+```
+
+## Provider shape
+
+The first internal provider shape is intentionally small:
+
+```ts
+export interface AddressAutocompleteProvider {
+    getSuggestions(query: string, options?: AddressAutocompleteRequestOptions): Promise<readonly AddressSuggestion[]>
+    selectSuggestion(suggestion: AddressSuggestion): Promise<SelectedAddress>
+    resetSession?: () => void
 }
 ```
 
-This shape is intentionally application-friendly. It should let a form fill common fields without leaking Google-specific place internals into application code.
+This should be enough for browser-side Google support now and a future server-side proxy provider later without changing component consumers.
+
+## Parser policy
+
+`parseGooglePlaceAddress()` should be conservative. It returns empty strings when Google omits address components and `null` for missing coordinates. It should not guess coordinates or invent address parts.
+
+City fallback order:
+
+1. `locality`
+2. `postal_town`
+3. `sublocality_level_1`
+4. `administrative_area_level_3`
+5. `administrative_area_level_2`
