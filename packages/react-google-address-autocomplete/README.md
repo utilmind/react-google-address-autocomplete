@@ -154,6 +154,8 @@ The provider loads the Google Maps JavaScript API in the browser, imports the `p
 
 ## Demo app
 
+The demo app includes a dark theme, themed dropdown scrollbars, and a local Lucide-style MapPin SVG suggestion icon. These styles are intentionally demo-owned; the package itself remains headless and does not ship required CSS or icon dependencies.
+
 This repository uses pnpm workspaces. Run the demo from the repository root:
 
 ```bash

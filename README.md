@@ -14,6 +14,7 @@ This repository is in early implementation. The current package includes:
 - keyboard navigation for ArrowUp, ArrowDown, Enter, Escape, and Tab;
 - optional dropdown portal rendering for dialogs/modals;
 - form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude;
+- dark themed demo dropdown styling with a Lucide-style map-pin icon and themed scrollbars;
 - browser-autofill-resistant defaults for address search inputs;
 - selected-address TypeScript types;
 - tested Google place address parser;

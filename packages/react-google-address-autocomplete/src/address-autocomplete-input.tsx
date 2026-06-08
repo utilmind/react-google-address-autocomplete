@@ -50,6 +50,8 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         origin,
         onAddressSelect,
         getSelectedAddressInputValue,
+        previewHighlightedSuggestion = false,
+        getHighlightedSuggestionInputValue,
         renderSuggestion,
         renderLoading,
         renderEmpty,
@@ -75,6 +77,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [suggestions, setSuggestions] = useState<readonly AddressSuggestion[]>([])
     const [highlightedIndex, setHighlightedIndex] = useState(-1)
+    const [previewValue, setPreviewValue] = useState<string | null>(null)
     const [error, setError] = useState<Error | null>(null)
     const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null)
 
@@ -86,6 +89,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         defaultDropdownPortalOffset,
     )
     const isInteractive = !disabled && !readOnly
+    const displayedValue = previewValue ?? value
     const trimmedValue = value.trim()
 
     const requestOptions = useMemo<AddressAutocompleteRequestOptions>(
@@ -157,6 +161,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                 setStatus('idle')
                 setSuggestions([])
                 setHighlightedIndex(-1)
+                setPreviewValue(null)
                 setError(null)
             }, 0)
 
@@ -185,6 +190,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
 
                     const limitedSuggestions = nextSuggestions.slice(0, normalizedMaxSuggestions)
                     setSuggestions(limitedSuggestions)
+                    setPreviewValue(null)
                     setHighlightedIndex(limitedSuggestions.length ? 0 : -1)
                     setStatus(limitedSuggestions.length ? 'open' : 'empty')
                 })
@@ -194,6 +200,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                     }
 
                     setSuggestions([])
+                    setPreviewValue(null)
                     setHighlightedIndex(-1)
                     setError(toError(reason))
                     setStatus('error')
@@ -221,6 +228,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         setStatus('idle')
         setSuggestions([])
         setHighlightedIndex(-1)
+        setPreviewValue(null)
         setError(null)
     }, [provider])
 
@@ -246,6 +254,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                 setStatus('idle')
                 setSuggestions([])
                 setHighlightedIndex(-1)
+                setPreviewValue(null)
             } catch (reason) {
                 setError(toError(reason))
                 setStatus('error')
@@ -253,6 +262,28 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
             }
         },
         [disabled, getSelectedAddressInputValue, onAddressSelect, onValueChange, provider, readOnly],
+    )
+
+    const getSuggestionPreviewValue = useCallback(
+        (suggestion: AddressSuggestion) =>
+            getHighlightedSuggestionInputValue ? getHighlightedSuggestionInputValue(suggestion) : suggestion.fullText,
+        [getHighlightedSuggestionInputValue],
+    )
+
+    const highlightSuggestionByIndex = useCallback(
+        (index: number, shouldPreview: boolean) => {
+            const suggestion = suggestions[index]
+            const nextIndex = suggestion ? index : -1
+
+            setHighlightedIndex(nextIndex)
+
+            if (!shouldPreview || !previewHighlightedSuggestion) {
+                return
+            }
+
+            setPreviewValue(suggestion ? getSuggestionPreviewValue(suggestion) : null)
+        },
+        [getSuggestionPreviewValue, previewHighlightedSuggestion, suggestions],
     )
 
     const handleInputFocus: FocusEventHandler<HTMLInputElement> = (event) => {
@@ -281,13 +312,13 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         if (event.key === 'ArrowDown') {
             event.preventDefault()
             setIsDropdownOpen(true)
-            setHighlightedIndex((currentIndex) => getNextHighlightedIndex(currentIndex, suggestions.length))
+            highlightSuggestionByIndex(getNextHighlightedIndex(highlightedIndex, suggestions.length), true)
             return
         }
 
         if (event.key === 'ArrowUp') {
             event.preventDefault()
-            setHighlightedIndex((currentIndex) => getPreviousHighlightedIndex(currentIndex, suggestions.length))
+            highlightSuggestionByIndex(getPreviousHighlightedIndex(highlightedIndex, suggestions.length), true)
             return
         }
 
@@ -314,6 +345,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         const nextValue = event.currentTarget.value
         const nextTrimmedValue = nextValue.trim()
 
+        setPreviewValue(null)
         onValueChange(nextValue)
 
         if (isInteractive) {
@@ -326,6 +358,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                 setStatus('idle')
                 setSuggestions([])
                 setHighlightedIndex(-1)
+                setPreviewValue(null)
                 setError(null)
             }
         }
@@ -345,7 +378,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
             renderLoading={renderLoading}
             renderSuggestion={renderSuggestion}
             selectSuggestion={selectSuggestion}
-            setHighlightedIndex={setHighlightedIndex}
+            setHighlightedIndex={(index) => highlightSuggestionByIndex(index, false)}
             slotState={slotState}
             status={status}
             statusMessageClassName={statusMessageClassName}
@@ -376,7 +409,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                 readOnly={readOnly}
                 role="combobox"
                 type="text"
-                value={value}
+                value={displayedValue}
                 onBlur={handleInputBlur}
                 onChange={handleInputChange}
                 onFocus={handleInputFocus}

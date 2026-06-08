@@ -80,6 +80,8 @@ export interface AddressAutocompleteInputProps extends Omit<
     onValueChange: (value: string) => void
     onAddressSelect?: (address: SelectedAddress) => void
     getSelectedAddressInputValue?: (address: SelectedAddress, suggestion: AddressSuggestion) => string
+    previewHighlightedSuggestion?: boolean
+    getHighlightedSuggestionInputValue?: (suggestion: AddressSuggestion) => string
     provider?: AddressAutocompleteProvider
     label?: ReactNode
     className?: string

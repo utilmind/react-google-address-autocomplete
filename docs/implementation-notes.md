@@ -114,3 +114,7 @@ The Google provider ignores stale autocomplete responses by default. If request 
 The demo app is a Vite workspace and should be run with pnpm from the repository root. The root `dev` script delegates to `apps/demo`. Keep the demo intentionally close to real application usage: a basic inline input, a form-fill example, and a portal dropdown example for modal/dialog shells.
 
 The browser key belongs in `apps/demo/.env` as `VITE_GOOGLE_MAPS_API_KEY`. Do not commit real API keys.
+
+## Highlighted suggestion preview
+
+The component supports an opt-in `previewHighlightedSuggestion` mode to mimic the old Twitter Typeahead behavior. Keyboard navigation can temporarily display the highlighted suggestion in the input without committing it to the controlled `value`. The committed value still changes only through user input or final selection, which keeps the headless controlled API predictable.

@@ -78,6 +78,8 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Decide default CSS strategy: no required stylesheet in v0; headless slots first.
 - [x] Expose initial class names and render props for custom UI.
 - [x] Add a small optional example stylesheet in the demo app.
+- [x] Add dark themed demo dropdown scrollbars.
+- [x] Add a Lucide-style map-pin icon to demo suggestions.
 - [x] Add a portal dropdown demo for a clipped modal/dialog shell.
 - [ ] Verify dropdown z-index behavior inside real app dialogs.
 - [ ] Verify narrow/mobile layout.
@@ -88,6 +90,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add a basic demo page.
 - [ ] Add country restriction examples.
 - [x] Add a form-fill example that populates address, city, state, ZIP, country, latitude, and longitude.
+- [x] Polish the demo suggestion dropdown to be closer to the old Typeahead look.
 - [x] Add an example inside a modal/dialog.
 - [ ] Add error-state and empty-state examples.
 - [x] Add README instructions for enabling Google Places API.

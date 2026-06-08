@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
     AddressAutocompleteInput,
     createGooglePlacesAutocompleteProvider,
     type AddressAutocompleteProvider,
+    type AddressAutocompleteRenderSuggestionProps,
+    type AddressTextMatch,
     type SelectedAddress,
 } from 'react-google-address-autocomplete'
 
@@ -69,6 +72,7 @@ export default function App() {
                         statusMessageClassName="statusMessage"
                         suggestionClassName="suggestion"
                         value={address}
+                        renderSuggestion={renderAddressSuggestion}
                         onAddressSelect={setSelectedAddress}
                         onValueChange={setAddress}
                         renderError={(state) => state.error?.message ?? 'Address lookup failed'}
@@ -107,6 +111,7 @@ export default function App() {
                             statusMessageClassName="statusMessage"
                             suggestionClassName="suggestion"
                             value={formFields.address}
+                            renderSuggestion={renderAddressSuggestion}
                             onAddressSelect={(selected) => {
                                 setSelectedFormAddress(selected)
                                 setFormFields(selectedAddressToFormState(selected))
@@ -212,6 +217,7 @@ export default function App() {
                             statusMessageClassName="statusMessage"
                             suggestionClassName="suggestion"
                             value={modalAddress}
+                            renderSuggestion={renderAddressSuggestion}
                             onAddressSelect={setSelectedModalAddress}
                             onValueChange={setModalAddress}
                         />
@@ -229,6 +235,74 @@ export default function App() {
             ) : null}
         </main>
     )
+}
+
+function renderAddressSuggestion({ suggestion }: AddressAutocompleteRenderSuggestionProps) {
+    return (
+        <div className="suggestionContent">
+            <DemoMapPinIcon className="suggestionIcon" />
+            <div className="suggestionText">
+                <div className="suggestionMainText">
+                    {renderMatchedText(suggestion.mainText || suggestion.fullText, suggestion.mainTextMatches)}
+                </div>
+                {suggestion.secondaryText ? <small>{suggestion.secondaryText}</small> : null}
+            </div>
+        </div>
+    )
+}
+
+function DemoMapPinIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            aria-hidden="true"
+            className={className}
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            width="18"
+        >
+            <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+            <circle cx="12" cy="10" r="3" />
+        </svg>
+    )
+}
+
+function renderMatchedText(text: string, matches: readonly AddressTextMatch[]): ReactNode {
+    if (!matches.length) {
+        return text
+    }
+
+    const fragments: ReactNode[] = []
+    let cursor = 0
+
+    for (const match of matches) {
+        const startOffset = clamp(match.startOffset, 0, text.length)
+        const endOffset = clamp(match.endOffset, startOffset, text.length)
+
+        if (startOffset > cursor) {
+            fragments.push(text.slice(cursor, startOffset))
+        }
+
+        if (endOffset > startOffset) {
+            fragments.push(<mark key={`${startOffset}-${endOffset}`}>{text.slice(startOffset, endOffset)}</mark>)
+        }
+
+        cursor = endOffset
+    }
+
+    if (cursor < text.length) {
+        fragments.push(text.slice(cursor))
+    }
+
+    return fragments
+}
+
+function clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max)
 }
 
 function createDemoProvider(): AddressAutocompleteProvider | undefined {
