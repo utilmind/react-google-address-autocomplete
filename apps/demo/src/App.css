@@ -353,6 +353,29 @@ h2 {
     right: 18px;
 }
 
+.stateExampleGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.stateExampleField {
+    margin-top: 0;
+}
+
+.stateDropdown {
+    max-height: 220px;
+}
+
+.stateStatusMessage {
+    font-weight: 600;
+}
+
+.stateErrorMessage {
+    color: #fca5a5;
+}
+
 @media (width <= 640px) {
     .page-shell {
         padding: 18px;
@@ -362,7 +385,8 @@ h2 {
         padding: 22px;
     }
 
-    .form-grid {
+    .form-grid,
+    .stateExampleGrid {
         grid-template-columns: 1fr;
     }
 }

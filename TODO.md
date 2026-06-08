@@ -70,7 +70,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add basic disabled and read-only handling.
 - [x] Add browser-autofill-resistant defaults for custom address search inputs.
 - [x] Switch the default autofill suppression value to `autoComplete="one-time-code"` after Chrome testing.
-- [ ] Add deeper disabled and read-only interaction tests.
+- [x] Add deeper disabled and read-only interaction tests.
 - [x] Add minimum query length.
 - [x] Add max suggestions limit.
 - [x] Add basic highlighted matched text rendering.
@@ -89,8 +89,8 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add a Lucide-style loading spinner to the first demo loading state.
 - [x] Add a Lucide-style map-pin-search icon to the form Lookup button.
 - [x] Add a portal dropdown demo for a clipped modal/dialog shell.
-- [ ] Verify dropdown z-index behavior inside real app dialogs.
-- [ ] Verify narrow/mobile layout.
+- [x] Verify dropdown z-index behavior inside real app dialogs.
+- [x] Verify narrow/mobile layout.
 
 ## 6. Demo app
 
@@ -103,7 +103,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add compact one-line suggestion rendering in the first demo.
 - [x] Add a separate form-fill suggestion style without yellow match backgrounds.
 - [x] Add an example inside a modal/dialog.
-- [ ] Add error-state and empty-state examples.
+- [x] Add error-state and empty-state examples.
 - [x] Add README instructions for enabling Google Places API.
 - [x] Log demo autocomplete and explicit lookup events to the browser console.
 
@@ -124,7 +124,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Move component effect state updates behind async callbacks to satisfy React Hooks lint.
 - [x] Ignore nested generated `dist` outputs and local package artifacts in ESLint.
 - [ ] Add automated accessibility checks.
-- [ ] Add demo smoke build in CI.
+- [x] Add demo smoke build in CI.
 
 ## 8. Documentation
 
@@ -132,8 +132,8 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document minimal usage.
 - [x] Document API key and Google Cloud setup.
 - [x] Document session token behavior.
-- [ ] Document billing-related caveats.
-- [ ] Document Next.js usage.
+- [x] Document billing-related caveats.
+- [x] Document Next.js usage.
 - [x] Document Vite usage through the demo app.
 - [x] Document first-pass styling customization through class names and demo CSS.
 - [x] Document address result shape in the package README.
@@ -142,13 +142,13 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document browser autofill behavior and override options.
 - [x] Document component props and provider request options.
 - [x] Split the package README API reference into properties/options, events, and provider methods.
-- [ ] Document known limitations.
+- [x] Document known limitations.
 - [x] Document explicit free-text lookup behavior and clarify that blur does not trigger lookup.
 
 ## 9. Release and npm publication
 
 - [ ] Confirm package name availability.
-- [ ] Add `CHANGELOG.md`.
+- [x] Add `CHANGELOG.md`.
 - [ ] Add release script.
 - [ ] Add npm provenance if desired.
 - [ ] Publish `0.1.0-alpha.0`.
@@ -164,6 +164,8 @@ This is the living implementation plan for the component repository. Update it o
 ## Open decisions
 
 - Browser autofill suppression is best effort. `autoComplete="one-time-code"` currently behaves better than `new-password` in the demo, but keep monitoring Chrome/Safari behavior with real saved profiles.
+
+- z-index and narrow/mobile demo behavior have passed the current visual check, but real app integration should still verify stacking contexts with each modal/dialog library.
 
 - Should `postalCodeFull` be added as a convenience field?
 - Provider exposes explicit `lookupAddress()` for user-triggered Places lookup; component stays selection-only and does not look up free text on blur.

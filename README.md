@@ -14,20 +14,20 @@ This repository is in early implementation. The current package includes:
 - keyboard navigation for ArrowUp, ArrowDown, Enter, Escape, and Tab;
 - optional Twitter Typeahead-style highlighted suggestion preview in the input;
 - optional dropdown portal rendering for dialogs/modals;
-- form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude, with US-only search restrictions;
+- form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude, with worldwide or US-only search restrictions depending on the demo field;
 - dark themed demo dropdown styling with Lucide-style map-pin and map-pin-search icons, loading spinner, and themed scrollbars;
 - browser-autofill-resistant defaults for address search inputs;
 - optional loading row rendering, hidden by default;
 - selected-address TypeScript types;
 - tested Google place address parser;
 - browser-side Google Maps JavaScript loader;
-- browser-side Google Places Autocomplete Data API provider with explicit button-driven address lookup, console-logged demo events, and mocked unit tests.
+- browser-side Google Places Autocomplete Data API provider with explicit button-driven address lookup, console-logged demo events, local empty/error-state demo providers, and mocked unit tests.
 
-The next major step is hardening edge cases: disabled/read-only behavior, touch selection, more accessibility checks, and broader real-world demo coverage.
+The next major step is hardening edge cases from real app integration: touch-device selection, deeper accessibility checks, and broader international address fixtures.
 
 ## Package documentation
 
-The package-level documentation lives in [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md). It includes installation, minimal usage, a split API reference for properties/options, events, and provider methods, Google Cloud setup, demo instructions, selected-address shape, explicit lookup behavior, and local package testing notes.
+The package-level documentation lives in [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md). It includes installation, minimal usage, a split API reference for properties/options, events, and provider methods, Google Cloud setup, billing caveats, Next.js usage, known limitations, demo instructions, selected-address shape, explicit lookup behavior, and local package testing notes.
 
 ## Work plan
 

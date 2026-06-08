@@ -35,6 +35,8 @@ export default function App() {
     const [address, setAddress] = useState('')
     const [formFields, setFormFields] = useState<AddressFormState>(emptyAddressFormState)
     const [modalAddress, setModalAddress] = useState('')
+    const [emptyStateAddress, setEmptyStateAddress] = useState('')
+    const [errorStateAddress, setErrorStateAddress] = useState('')
     const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null)
     const [selectedFormAddress, setSelectedFormAddress] = useState<SelectedAddress | null>(null)
     const [formLookupError, setFormLookupError] = useState<string | null>(null)
@@ -45,6 +47,8 @@ export default function App() {
     const inlineProvider = useMemo(() => createDemoProvider(), [])
     const formProvider = useMemo(() => createDemoProvider(), [])
     const modalProvider = useMemo(() => createDemoProvider(), [])
+    const emptyStateProvider = useMemo(() => createEmptyDemoProvider(), [])
+    const errorStateProvider = useMemo(() => createErrorDemoProvider(), [])
 
     const formLookupQuery = formatFormAddressLookupQuery(formFields)
     const canLookupFormAddress = Boolean(formProvider?.lookupAddress && formLookupQuery && !isFormLookupPending)
@@ -265,6 +269,49 @@ export default function App() {
                 </section>
 
                 <section className="demo-card">
+                    <p className="eyebrow">State examples</p>
+                    <h2>Empty and error states</h2>
+                    <p className="summary">
+                        These two fields use local mock providers, so they work even without a Google API key. They are
+                        useful for styling <code>renderEmpty</code> and <code>renderError</code> output.
+                    </p>
+
+                    <div className="stateExampleGrid">
+                        <AddressAutocompleteInput
+                            className="field stateExampleField"
+                            dropdownClassName="dropdown stateDropdown"
+                            inputClassName="input"
+                            label="No results provider"
+                            placeholder="Try any address"
+                            provider={emptyStateProvider}
+                            statusMessageClassName="statusMessage stateStatusMessage"
+                            value={emptyStateAddress}
+                            renderEmpty={() => 'No matching addresses in this demo provider.'}
+                            onValueChange={(nextAddress) => {
+                                logDemoEvent('empty:onValueChange', nextAddress)
+                                setEmptyStateAddress(nextAddress)
+                            }}
+                        />
+
+                        <AddressAutocompleteInput
+                            className="field stateExampleField"
+                            dropdownClassName="dropdown stateDropdown"
+                            inputClassName="input"
+                            label="Failing provider"
+                            placeholder="Trigger an error state"
+                            provider={errorStateProvider}
+                            statusMessageClassName="statusMessage stateStatusMessage stateErrorMessage"
+                            value={errorStateAddress}
+                            renderError={(state) => state.error?.message ?? 'Demo provider failed.'}
+                            onValueChange={(nextAddress) => {
+                                logDemoEvent('error:onValueChange', nextAddress)
+                                setErrorStateAddress(nextAddress)
+                            }}
+                        />
+                    </div>
+                </section>
+
+                <section className="demo-card">
                     <p className="eyebrow">Portal example</p>
                     <h2>Dropdown inside modal/dialog shells</h2>
                     <p className="summary">
@@ -481,6 +528,28 @@ function createDemoProvider(): AddressAutocompleteProvider | undefined {
             language: 'en',
         },
     })
+}
+
+function createEmptyDemoProvider(): AddressAutocompleteProvider {
+    return {
+        getSuggestions: async () => [],
+        selectSuggestion: async () => {
+            throw new Error('The empty demo provider has no suggestion to select.')
+        },
+        resetSession: () => undefined,
+    }
+}
+
+function createErrorDemoProvider(): AddressAutocompleteProvider {
+    return {
+        getSuggestions: async () => {
+            throw new Error('Demo provider error. Use renderError to customize this row.')
+        },
+        selectSuggestion: async () => {
+            throw new Error('The failing demo provider cannot select suggestions.')
+        },
+        resetSession: () => undefined,
+    }
 }
 
 function FormTextInput({

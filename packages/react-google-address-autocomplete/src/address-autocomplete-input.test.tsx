@@ -53,6 +53,8 @@ function StatefulAddressInput({
     loadingText,
     renderLoading,
     countryCodes,
+    disabled,
+    readOnly,
 }: {
     dropdownPortal?: boolean
     provider?: AddressAutocompleteProvider
@@ -64,6 +66,8 @@ function StatefulAddressInput({
     loadingText?: string
     renderLoading?: () => string
     countryCodes?: readonly string[]
+    disabled?: boolean
+    readOnly?: boolean
 }) {
     const [value, setValue] = useState('')
 
@@ -71,6 +75,7 @@ function StatefulAddressInput({
         <AddressAutocompleteInput
             debounceMs={0}
             countryCodes={countryCodes}
+            disabled={disabled}
             dropdownPortal={dropdownPortal}
             label="Address"
             placeholder="Start typing"
@@ -81,6 +86,7 @@ function StatefulAddressInput({
             loadingText={loadingText}
             renderLoading={renderLoading}
             provider={provider}
+            readOnly={readOnly}
             value={value}
             onAddressSelect={onAddressSelect}
             onValueChange={setValue}
@@ -157,6 +163,36 @@ describe('AddressAutocompleteInput', () => {
         await user.type(screen.getByLabelText('Address'), '13133')
 
         expect(await screen.findByText('Please wait')).toBeTruthy()
+    })
+
+    it('does not fetch suggestions or change value when disabled', async () => {
+        const user = userEvent.setup()
+        const provider = createMockProvider()
+
+        render(<StatefulAddressInput disabled provider={provider} />)
+
+        const input = screen.getByLabelText('Address') as HTMLInputElement
+        await user.click(input)
+        await user.type(input, '13133')
+
+        expect(input.value).toBe('')
+        expect(provider.getSuggestions).not.toHaveBeenCalled()
+        expect(screen.queryByRole('listbox')).toBeNull()
+    })
+
+    it('does not fetch suggestions or change value when read-only', async () => {
+        const user = userEvent.setup()
+        const provider = createMockProvider()
+
+        render(<StatefulAddressInput readOnly provider={provider} />)
+
+        const input = screen.getByLabelText('Address') as HTMLInputElement
+        await user.click(input)
+        await user.type(input, '13133')
+
+        expect(input.value).toBe('')
+        expect(provider.getSuggestions).not.toHaveBeenCalled()
+        expect(screen.queryByRole('listbox')).toBeNull()
     })
 
     it('fetches and renders suggestions while typing', async () => {

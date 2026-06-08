@@ -358,6 +358,63 @@ const lookedUpAddress = await provider.lookupAddress?.('13133 34th Street North,
 
 The provider loads the Google Maps JavaScript API in the browser, imports the `places` library, calls `AutocompleteSuggestion.fetchAutocompleteSuggestions()` for dropdown suggestions and explicit `lookupAddress()` calls, and fetches selected place details through the original `PlacePrediction`. It creates one Google `AutocompleteSessionToken` per autocomplete session and resets that token after a successful dropdown selection.
 
+## Next.js usage
+
+This package is browser-oriented because the built-in Google provider loads the Google Maps JavaScript API and uses
+`window.google`. In Next.js App Router projects, render the field from a client component.
+
+```tsx
+'use client'
+
+import { useMemo, useState } from 'react'
+import { AddressAutocompleteInput, createGooglePlacesAutocompleteProvider } from 'react-google-address-autocomplete'
+
+export function AddressField() {
+    const [address, setAddress] = useState('')
+
+    const provider = useMemo(
+        () =>
+            createGooglePlacesAutocompleteProvider({
+                apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
+                defaultRequestOptions: { countryCodes: ['US'] },
+            }),
+        [],
+    )
+
+    return <AddressAutocompleteInput provider={provider} value={address} onValueChange={setAddress} />
+}
+```
+
+Use a browser-restricted public key such as `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Do not put unrestricted server keys in
+client components. A future server-proxy provider can be added without changing the component UI API because the
+component talks only to the `AddressAutocompleteProvider` interface.
+
+## Billing and quota caveats
+
+The Google provider is designed to use one autocomplete session token per user autocomplete session and reset it after a
+place is selected. Keep that behavior enabled because session tokens help Google group prediction requests with the final
+place-details request.
+
+Operational caveats to plan for before production use:
+
+- Enable the required Google Maps JavaScript / Places APIs in the same Google Cloud project as the browser key.
+- Restrict browser keys by HTTP referrer.
+- Set budget alerts and monitor quota usage before exposing the field to public traffic.
+- Avoid automatic free-text lookup on blur. The component intentionally leaves `lookupAddress()` as an explicit user action
+  so apps do not create surprise lookup traffic while users tab through forms.
+- Keep `fetchFields()` focused on the fields needed by the parser and form. The built-in provider requests only the fields
+  needed for normalized address output.
+
+## Known limitations
+
+- Browser autofill suppression is best effort. Chrome and Safari can still show saved profile UI based on browser heuristics.
+- Touch selection has not had a dedicated manual device pass yet. Mouse and keyboard behavior are covered by unit tests.
+- Automated screen-reader tooling has not been added yet. The component has first-pass ARIA combobox/listbox wiring, but
+  production apps should still perform manual accessibility checks.
+- International address formatting needs more fixtures from real Place objects. The parser supports common US and non-US
+  component shapes, but global postal conventions vary.
+- The built-in provider is browser-side only. Server-proxy providers are intentionally deferred.
+
 ## Manual local package build
 
 Use this flow to build the package into a local `.tgz` file and install it in another project without publishing to npm.
@@ -414,7 +471,7 @@ If your app already has the package installed from an older `.tgz`, remove the o
 
 ## Demo app
 
-The demo app includes a dark theme, themed dropdown scrollbars, local Lucide-style MapPin and MapPinSearch SVG icons, and a Lucide-style loading spinner in the first autocomplete example. It also logs `onValueChange`, `onAddressSelect`, and explicit `lookupAddress()` outcomes to the browser console so you can see the important event flow. These styles and logs are intentionally demo-owned; the package itself remains headless and does not ship required CSS or icon dependencies.
+The demo app includes a dark theme, themed dropdown scrollbars, local Lucide-style MapPin and MapPinSearch SVG icons, a Lucide-style loading spinner in the first autocomplete example, and local mock providers for empty/error state styling. It also logs `onValueChange`, `onAddressSelect`, and explicit `lookupAddress()` outcomes to the browser console so you can see the important event flow. These styles and logs are intentionally demo-owned; the package itself remains headless and does not ship required CSS or icon dependencies.
 
 This repository uses pnpm workspaces. Run the demo from the repository root:
 

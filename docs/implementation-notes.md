@@ -40,6 +40,7 @@ The first internal provider shape is intentionally small:
 export interface AddressAutocompleteProvider {
     getSuggestions(query: string, options?: AddressAutocompleteRequestOptions): Promise<readonly AddressSuggestion[]>
     selectSuggestion(suggestion: AddressSuggestion): Promise<SelectedAddress>
+    lookupAddress?: (query: string, options?: AddressAutocompleteRequestOptions) => Promise<SelectedAddress | null>
     resetSession?: () => void
 }
 ```
@@ -84,6 +85,10 @@ The component is an address search box, not a personal-profile form field. Nativ
 
 The component enters a `loading` status while it waits for suggestions or selected-place details. Loading UI is hidden by default because address autocomplete responses are usually fast and loading rows can cause avoidable dropdown flicker. Consumers can opt into visible loading UI with `showLoading`, localize the fallback with `loadingText`, or fully replace it with `renderLoading`.
 
+## Empty and error state policy
+
+The component exposes `renderEmpty` and `renderError` slots instead of prescribing copy or styling. The demo includes local mock providers for both states so styling can be verified without a live Google API key. Provider-specific error classes are still intentionally minimal; applications should treat errors as user-facing lookup failures and log provider details separately when needed.
+
 ## Controlled value policy
 
 The component never owns the input text permanently. User typing is emitted through `onValueChange()`, and selected place details are emitted through `onAddressSelect()`. After a suggestion is selected, the component calls `onValueChange()` with either:
@@ -115,7 +120,7 @@ The Google provider ignores stale autocomplete responses by default. If request 
 
 ## Demo app policy
 
-The demo app is a Vite workspace and should be run with pnpm from the repository root. The root `dev` script delegates to `apps/demo`. Keep the demo intentionally close to real application usage: a basic inline input, a US-only form-fill example, and a portal dropdown example for modal/dialog shells. The basic inline input stays worldwide so the demo shows both unrestricted and country-restricted request options.
+The demo app is a Vite workspace and should be run with pnpm from the repository root. The root `dev` script delegates to `apps/demo`. Keep the demo intentionally close to real application usage: a US-only compact inline input, a worldwide form-fill example, local empty/error state examples, and a portal dropdown example for modal/dialog shells. This keeps the demo useful as application starter code while still showing both unrestricted and country-restricted request options.
 
 The browser key belongs in `apps/demo/.env` as `VITE_GOOGLE_MAPS_API_KEY`. Do not commit real API keys.
 
