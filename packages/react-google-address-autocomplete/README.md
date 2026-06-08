@@ -64,6 +64,7 @@ const [form, setForm] = useState({
     city: '',
     state: '',
     zip: '',
+    country: '',
     latitude: '',
     longitude: '',
 })
@@ -83,6 +84,7 @@ const [form, setForm] = useState({
             zip: selectedAddress.postalCodeSuffix
                 ? `${selectedAddress.postalCode}-${selectedAddress.postalCodeSuffix}`
                 : selectedAddress.postalCode,
+            country: selectedAddress.country || selectedAddress.countryCode,
             latitude: selectedAddress.latitude?.toString() ?? '',
             longitude: selectedAddress.longitude?.toString() ?? '',
         })

@@ -13,6 +13,7 @@ interface AddressFormState {
     city: string
     state: string
     zip: string
+    country: string
     latitude: string
     longitude: string
 }
@@ -22,6 +23,7 @@ const emptyAddressFormState: AddressFormState = {
     city: '',
     state: '',
     zip: '',
+    country: '',
     latitude: '',
     longitude: '',
 }
@@ -86,8 +88,8 @@ export default function App() {
                     <h2>Populate separate address fields</h2>
                     <p className="summary">
                         This example stores the selected place as structured form data. The autocomplete input keeps the
-                        street address only, while city, state, ZIP, latitude, and longitude are copied from the
-                        selected Google Place result.
+                        street address only, while city, state, ZIP, country, latitude, and longitude are copied from
+                        the selected Google Place result.
                     </p>
 
                     <div className="form-grid">
@@ -129,6 +131,11 @@ export default function App() {
                             label="ZIP"
                             value={formFields.zip}
                             onValueChange={(zip) => setFormFields((current) => ({ ...current, zip }))}
+                        />
+                        <FormTextInput
+                            label="Country"
+                            value={formFields.country}
+                            onValueChange={(country) => setFormFields((current) => ({ ...current, country }))}
                         />
                         <FormTextInput
                             label="Latitude"
@@ -266,6 +273,7 @@ function selectedAddressToFormState(address: SelectedAddress): AddressFormState 
         city: address.city,
         state: address.stateCode || address.state,
         zip: formatPostalCode(address),
+        country: address.country || address.countryCode,
         latitude: formatNullableCoordinate(address.latitude),
         longitude: formatNullableCoordinate(address.longitude),
     }

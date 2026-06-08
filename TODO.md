@@ -87,7 +87,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add `.env` support for a browser Google Maps API key.
 - [x] Add a basic demo page.
 - [ ] Add country restriction examples.
-- [x] Add a form-fill example that populates address, city, state, ZIP, latitude, and longitude.
+- [x] Add a form-fill example that populates address, city, state, ZIP, country, latitude, and longitude.
 - [x] Add an example inside a modal/dialog.
 - [ ] Add error-state and empty-state examples.
 - [x] Add README instructions for enabling Google Places API.
