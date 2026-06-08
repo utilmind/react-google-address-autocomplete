@@ -51,6 +51,7 @@ export interface AddressAutocompleteProvider {
         options?: AddressAutocompleteRequestOptions,
     ) => Promise<readonly AddressSuggestion[]>
     selectSuggestion: (suggestion: AddressSuggestion) => Promise<SelectedAddress>
+    lookupAddress?: (query: string, options?: AddressAutocompleteRequestOptions) => Promise<SelectedAddress | null>
     resetSession?: () => void
 }
 

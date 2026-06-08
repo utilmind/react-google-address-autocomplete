@@ -37,12 +37,50 @@ export default function App() {
     const [modalAddress, setModalAddress] = useState('')
     const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null)
     const [selectedFormAddress, setSelectedFormAddress] = useState<SelectedAddress | null>(null)
+    const [formLookupError, setFormLookupError] = useState<string | null>(null)
+    const [isFormLookupPending, setIsFormLookupPending] = useState(false)
     const [selectedModalAddress, setSelectedModalAddress] = useState<SelectedAddress | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     const inlineProvider = useMemo(() => createDemoProvider(), [])
     const formProvider = useMemo(() => createDemoProvider(), [])
     const modalProvider = useMemo(() => createDemoProvider(), [])
+
+    const formLookupQuery = formatFormAddressLookupQuery(formFields)
+    const canLookupFormAddress = Boolean(formProvider?.lookupAddress && formLookupQuery && !isFormLookupPending)
+
+    function updateFormField(field: keyof AddressFormState, value: string) {
+        setFormLookupError(null)
+        setSelectedFormAddress(null)
+        setFormFields((current) => ({ ...current, [field]: value }))
+    }
+
+    async function handleFormAddressLookup() {
+        if (!formProvider?.lookupAddress || !formLookupQuery) {
+            return
+        }
+
+        setIsFormLookupPending(true)
+        setFormLookupError(null)
+
+        try {
+            const lookedUpAddress = await formProvider.lookupAddress(formLookupQuery)
+
+            if (!lookedUpAddress) {
+                setSelectedFormAddress(null)
+                setFormLookupError('No matching address found.')
+                return
+            }
+
+            setSelectedFormAddress(lookedUpAddress)
+            setFormFields(selectedAddressToFormState(lookedUpAddress))
+        } catch (reason) {
+            setSelectedFormAddress(null)
+            setFormLookupError(toErrorMessage(reason))
+        } finally {
+            setIsFormLookupPending(false)
+        }
+    }
 
     return (
         <main className="page-shell">
@@ -104,64 +142,87 @@ export default function App() {
                     <p className="summary">Two-line suggestions, no “Loading” row, worldwide.</p>
 
                     <div className="form-grid">
-                        <AddressAutocompleteInput
-                            className="field form-field form-field-wide"
-                            dropdownClassName="dropdown formDropdown"
-                            getSelectedAddressInputValue={(selected) =>
-                                selected.addressLine1 || selected.formattedAddress
-                            }
-                            highlightedSuggestionClassName="suggestionHighlighted formSuggestionHighlighted"
-                            getHighlightedSuggestionInputValue={(suggestion) =>
-                                suggestion.mainText || suggestion.fullText
-                            }
-                            inputClassName="input"
-                            label="Address"
-                            placeholder="Start typing a street address"
-                            previewHighlightedSuggestion
-                            provider={formProvider}
-                            statusMessageClassName="statusMessage"
-                            suggestionClassName="suggestion formSuggestion"
-                            value={formFields.address}
-                            renderSuggestion={renderAddressSuggestion}
-                            onAddressSelect={(selected) => {
-                                setSelectedFormAddress(selected)
-                                setFormFields(selectedAddressToFormState(selected))
-                            }}
-                            onValueChange={(nextAddress) => {
-                                setSelectedFormAddress(null)
-                                setFormFields((current) => ({ ...current, address: nextAddress }))
-                            }}
-                        />
+                        <div className="field form-field form-field-wide addressLookupField">
+                            <span>Address</span>
+                            <div className="inputButtonGroup">
+                                <AddressAutocompleteInput
+                                    className="inputButtonAutocomplete"
+                                    dropdownClassName="dropdown formDropdown"
+                                    getSelectedAddressInputValue={(selected) =>
+                                        selected.addressLine1 || selected.formattedAddress
+                                    }
+                                    highlightedSuggestionClassName="suggestionHighlighted formSuggestionHighlighted"
+                                    getHighlightedSuggestionInputValue={(suggestion) =>
+                                        suggestion.mainText || suggestion.fullText
+                                    }
+                                    inputClassName="input inputWithInlineButton"
+                                    placeholder="Start typing a street address"
+                                    previewHighlightedSuggestion
+                                    provider={formProvider}
+                                    statusMessageClassName="statusMessage"
+                                    suggestionClassName="suggestion formSuggestion"
+                                    value={formFields.address}
+                                    renderSuggestion={renderAddressSuggestion}
+                                    onAddressSelect={(selected) => {
+                                        setFormLookupError(null)
+                                        setSelectedFormAddress(selected)
+                                        setFormFields(selectedAddressToFormState(selected))
+                                    }}
+                                    onValueChange={(nextAddress) => {
+                                        updateFormField('address', nextAddress)
+                                    }}
+                                />
+                                <button
+                                    aria-label="Look up the typed address"
+                                    className="inputInlineButton"
+                                    disabled={!canLookupFormAddress}
+                                    type="button"
+                                    onClick={() => void handleFormAddressLookup()}
+                                    onMouseDown={(event) => event.preventDefault()}
+                                >
+                                    {isFormLookupPending ? (
+                                        <DemoSpinnerIcon className="loadingSpinner" />
+                                    ) : (
+                                        'Lookup'
+                                    )}
+                                </button>
+                            </div>
+                            <small className="lookupHelpText">
+                                Select a suggestion from the dropdown, or click Lookup to explicitly look up the typed
+                                address. Nothing runs on blur.
+                            </small>
+                            {formLookupError ? <small className="lookupErrorText">{formLookupError}</small> : null}
+                        </div>
 
                         <FormTextInput
                             label="City"
                             value={formFields.city}
-                            onValueChange={(city) => setFormFields((current) => ({ ...current, city }))}
+                            onValueChange={(city) => updateFormField('city', city)}
                         />
                         <FormTextInput
                             label="State"
                             value={formFields.state}
-                            onValueChange={(state) => setFormFields((current) => ({ ...current, state }))}
+                            onValueChange={(state) => updateFormField('state', state)}
                         />
                         <FormTextInput
                             label="ZIP"
                             value={formFields.zip}
-                            onValueChange={(zip) => setFormFields((current) => ({ ...current, zip }))}
+                            onValueChange={(zip) => updateFormField('zip', zip)}
                         />
                         <FormTextInput
                             label="Country"
                             value={formFields.country}
-                            onValueChange={(country) => setFormFields((current) => ({ ...current, country }))}
+                            onValueChange={(country) => updateFormField('country', country)}
                         />
                         <FormTextInput
                             label="Latitude"
                             value={formFields.latitude}
-                            onValueChange={(latitude) => setFormFields((current) => ({ ...current, latitude }))}
+                            onValueChange={(latitude) => updateFormField('latitude', latitude)}
                         />
                         <FormTextInput
                             label="Longitude"
                             value={formFields.longitude}
-                            onValueChange={(longitude) => setFormFields((current) => ({ ...current, longitude }))}
+                            onValueChange={(longitude) => updateFormField('longitude', longitude)}
                         />
                     </div>
 
@@ -169,6 +230,7 @@ export default function App() {
                         <button
                             type="button"
                             onClick={() => {
+                                setFormLookupError(null)
                                 setSelectedFormAddress(null)
                                 setFormFields(emptyAddressFormState)
                             }}
@@ -395,6 +457,17 @@ function FormTextInput({
             />
         </label>
     )
+}
+
+function formatFormAddressLookupQuery(form: AddressFormState): string {
+    return [form.address, form.city, form.state, form.zip, form.country]
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .join(', ')
+}
+
+function toErrorMessage(reason: unknown): string {
+    return reason instanceof Error ? reason.message : 'Address lookup failed.'
 }
 
 function selectedAddressToFormState(address: SelectedAddress): AddressFormState {

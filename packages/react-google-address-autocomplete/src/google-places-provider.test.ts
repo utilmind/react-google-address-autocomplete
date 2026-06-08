@@ -224,4 +224,92 @@ describe('createGooglePlacesAutocompleteProvider', () => {
         })
         await expect(stalePromise).resolves.toEqual([])
     })
+
+    it('explicitly looks up a typed address through Places suggestions when lookupAddress is called', async () => {
+        const place = {
+            id: 'looked-up-place-1',
+            formattedAddress: '1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA',
+            addressComponents: [
+                { longText: '1600', shortText: '1600', types: ['street_number'] },
+                { longText: 'Amphitheatre Parkway', shortText: 'Amphitheatre Pkwy', types: ['route'] },
+                { longText: 'Mountain View', shortText: 'Mountain View', types: ['locality'] },
+                { longText: 'California', shortText: 'CA', types: ['administrative_area_level_1'] },
+                { longText: '94043', shortText: '94043', types: ['postal_code'] },
+                { longText: 'United States', shortText: 'US', types: ['country'] },
+            ],
+            location: { lat: () => 37.422, lng: () => -122.084 },
+            fetchFields: vi.fn().mockResolvedValue(undefined),
+        }
+        const toPlace = vi.fn(() => place)
+        const fetchAutocompleteSuggestions = vi.fn().mockResolvedValue({
+            suggestions: [
+                {
+                    placePrediction: {
+                        placeId: 'looked-up-place-1',
+                        mainText: { text: '1600 Amphitheatre Parkway' },
+                        secondaryText: { text: 'Mountain View, CA, USA' },
+                        text: { text: '1600 Amphitheatre Parkway, Mountain View, CA, USA' },
+                        toPlace,
+                    },
+                },
+            ],
+        })
+        const importLibrary = vi.fn().mockResolvedValue({
+            AutocompleteSessionToken: MockAutocompleteSessionToken,
+            AutocompleteSuggestion: { fetchAutocompleteSuggestions },
+        })
+        const provider = createGooglePlacesAutocompleteProvider({
+            apiKey: 'test-key',
+            defaultRequestOptions: {
+                countryCodes: ['US'],
+                region: 'US',
+            },
+            loadGoogleMaps: async () => ({ maps: { importLibrary } }),
+        })
+
+        const selectedAddress = await provider.lookupAddress?.(' 1600 Amphitheatre Parkway ', {
+            countryCodes: ['US'],
+        })
+
+        expect(importLibrary).toHaveBeenCalledWith('places')
+        expect(fetchAutocompleteSuggestions).toHaveBeenCalledWith(
+            expect.objectContaining({
+                input: '1600 Amphitheatre Parkway',
+                includedRegionCodes: ['US'],
+                region: 'US',
+            }),
+        )
+        expect(toPlace).toHaveBeenCalledTimes(1)
+        expect(place.fetchFields).toHaveBeenCalledWith({
+            fields: ['id', 'formattedAddress', 'addressComponents', 'location'],
+        })
+        expect(selectedAddress).toMatchObject({
+            placeId: 'looked-up-place-1',
+            formattedAddress: '1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA',
+            addressLine1: '1600 Amphitheatre Parkway',
+            city: 'Mountain View',
+            stateCode: 'CA',
+            postalCode: '94043',
+            latitude: 37.422,
+            longitude: -122.084,
+        })
+    })
+
+    it('returns null from lookupAddress for blank input and empty Places suggestions', async () => {
+        const fetchAutocompleteSuggestions = vi.fn().mockResolvedValue({ suggestions: [] })
+        const importLibrary = vi.fn().mockResolvedValue({
+            AutocompleteSessionToken: MockAutocompleteSessionToken,
+            AutocompleteSuggestion: { fetchAutocompleteSuggestions },
+        })
+        const provider = createGooglePlacesAutocompleteProvider({
+            apiKey: 'test-key',
+            loadGoogleMaps: async () => ({ maps: { importLibrary } }),
+        })
+
+        await expect(provider.lookupAddress?.('   ')).resolves.toBeNull()
+        await expect(provider.lookupAddress?.('Unknown address')).resolves.toBeNull()
+
+        expect(fetchAutocompleteSuggestions).toHaveBeenCalledTimes(1)
+    })
+
 })

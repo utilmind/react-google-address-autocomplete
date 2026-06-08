@@ -366,3 +366,58 @@ h2 {
         grid-template-columns: 1fr;
     }
 }
+
+.addressLookupField {
+    margin-top: 0;
+}
+
+.inputButtonGroup {
+    position: relative;
+}
+
+.inputButtonAutocomplete {
+    position: relative;
+}
+
+.inputWithInlineButton {
+    padding-right: 104px;
+}
+
+.inputInlineButton {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    bottom: 6px;
+    display: inline-flex;
+    min-width: 84px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #3d3d3d;
+    border-radius: 8px;
+    background: #f7f7f7;
+    color: #111;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    padding: 0 14px;
+}
+
+.inputInlineButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.lookupHelpText,
+.lookupErrorText {
+    display: block;
+    margin-top: 0;
+    line-height: 1.4;
+}
+
+.lookupHelpText {
+    color: #9ca3af;
+}
+
+.lookupErrorText {
+    color: #fca5a5;
+}

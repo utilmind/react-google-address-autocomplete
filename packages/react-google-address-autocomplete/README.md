@@ -4,7 +4,7 @@ Reusable React address autocomplete component powered by Google Places Autocompl
 
 ## Status
 
-Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, can customize the input value after a suggestion is selected, hides loading UI by default, and uses browser-autofill-resistant input defaults. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
+Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, can customize the input value after a suggestion is selected, hides loading UI by default, and uses browser-autofill-resistant input defaults. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider with an explicit free-text address lookup method powered by Places suggestions and Place details.
 
 ## Design decisions
 
@@ -92,7 +92,7 @@ Input-level props win over provider defaults, so a reusable provider can still b
 | `value`                              | `string`                                           | required                          | Current input value.                                                                              |
 | `onValueChange`                      | `(value: string) => void`                          | required                          | Called when the user types or when a selected suggestion commits a new input value.               |
 | `provider`                           | `AddressAutocompleteProvider`                      | `undefined`                       | Suggestion/details provider. Use `createGooglePlacesAutocompleteProvider()` for Google Places.    |
-| `onAddressSelect`                    | `(address: SelectedAddress) => void`               | `undefined`                       | Called only after the user selects a dropdown suggestion and place details are parsed.            |
+| `onAddressSelect`                    | `(address: SelectedAddress) => void`               | `undefined`                       | Called after the user selects a suggestion and place details are parsed.                          |
 | `getSelectedAddressInputValue`       | `(address, suggestion) => string`                  | formatted address                 | Controls what text is committed to the input after selection. Useful for street-only form fields. |
 | `previewHighlightedSuggestion`       | `boolean`                                          | `false`                           | Shows the highlighted suggestion in the input during arrow-key navigation without committing it.  |
 | `getHighlightedSuggestionInputValue` | `(suggestion) => string`                           | suggestion full text              | Controls preview text when `previewHighlightedSuggestion` is enabled.                             |
@@ -132,9 +132,9 @@ These component props are passed to `provider.getSuggestions(query, options)`: `
 
 ## Selection behavior
 
-`onAddressSelect` fires only when the user commits one of the dropdown suggestions, either by mouse/touch interaction or keyboard selection. Free typing only calls `onValueChange`; it does not geocode the typed text and does not call `onAddressSelect`.
+`onAddressSelect` fires only when the user selects a suggestion from the dropdown. The component does not look up free text on blur, Enter, or form submit. This keeps typing predictable: manual edits update only `value` through `onValueChange`; selected suggestions update `value` and call `onAddressSelect`.
 
-The package intentionally does not provide a free-text geocode fallback today. A free-text fallback would mean taking raw text typed by the user, such as `1600 Amphitheatre Parkway`, sending it to a geocoder when no dropdown option was selected, and treating an exact geocode match as a selected address. That behavior can be useful in some apps, but it is easier to misfire and should be a separate explicit feature if it is ever added.
+If an application wants to verify a manually typed address, call the provider's explicit `lookupAddress()` method from your own button or submit handler.
 
 ## Highlighted suggestion preview
 
@@ -198,6 +198,51 @@ const [form, setForm] = useState({
     }}
 />
 ```
+
+## Explicit free-text address lookup
+
+The Google provider exposes `lookupAddress(query, options?)` for explicit lookup of a manually typed address. This is intentionally provider-level API, not automatic component behavior. Use it from a button such as “Lookup” or “Verify address” when the user clearly asks for lookup. The built-in Google provider implements this through the Places Autocomplete Data API plus Place details, not the separate Google Geocoding service.
+
+```tsx
+const [isLookupPending, setIsLookupPending] = useState(false)
+const [lookupError, setLookupError] = useState<string | null>(null)
+
+async function handleLookupClick() {
+    if (!provider.lookupAddress || !form.address.trim()) {
+        return
+    }
+
+    setIsLookupPending(true)
+    setLookupError(null)
+
+    try {
+        const selectedAddress = await provider.lookupAddress(
+            [form.address, form.city, form.state, form.zip, form.country].filter(Boolean).join(', '),
+        )
+
+        if (!selectedAddress) {
+            setLookupError('No matching address found.')
+            return
+        }
+
+        setForm({
+            address: selectedAddress.addressLine1 || selectedAddress.formattedAddress,
+            city: selectedAddress.city,
+            state: selectedAddress.stateCode || selectedAddress.state,
+            zip: selectedAddress.postalCodeSuffix
+                ? `${selectedAddress.postalCode}-${selectedAddress.postalCodeSuffix}`
+                : selectedAddress.postalCode,
+            country: selectedAddress.country || selectedAddress.countryCode,
+            latitude: selectedAddress.latitude?.toString() ?? '',
+            longitude: selectedAddress.longitude?.toString() ?? '',
+        })
+    } finally {
+        setIsLookupPending(false)
+    }
+}
+```
+
+The demo app shows this pattern with an input-adjacent button and a spinner.
 
 ## Loading state
 
@@ -276,9 +321,10 @@ const provider = createGooglePlacesAutocompleteProvider({
 
 const suggestions = await provider.getSuggestions('13133 34th Street North')
 const selectedAddress = await provider.selectSuggestion(suggestions[0])
+const lookedUpAddress = await provider.lookupAddress?.('13133 34th Street North, Clearwater, FL')
 ```
 
-The provider loads the Google Maps JavaScript API in the browser, imports the `places` library, calls `AutocompleteSuggestion.fetchAutocompleteSuggestions()`, and fetches selected place details through the original `PlacePrediction`. It creates one Google `AutocompleteSessionToken` per autocomplete session and resets that token after a successful selection.
+The provider loads the Google Maps JavaScript API in the browser, imports the `places` library, calls `AutocompleteSuggestion.fetchAutocompleteSuggestions()` for dropdown suggestions and explicit `lookupAddress()` calls, and fetches selected place details through the original `PlacePrediction`. It creates one Google `AutocompleteSessionToken` per autocomplete session and resets that token after a successful dropdown selection.
 
 ## Manual local package build
 

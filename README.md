@@ -21,13 +21,13 @@ This repository is in early implementation. The current package includes:
 - selected-address TypeScript types;
 - tested Google place address parser;
 - browser-side Google Maps JavaScript loader;
-- browser-side Google Places Autocomplete Data API provider with mocked unit tests.
+- browser-side Google Places Autocomplete Data API provider with explicit button-driven address lookup and mocked unit tests.
 
 The next major step is hardening edge cases: disabled/read-only behavior, touch selection, more accessibility checks, and broader real-world demo coverage.
 
 ## Package documentation
 
-The package-level documentation lives in [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md). It includes installation, minimal usage, component props, provider options, Google Cloud setup, demo instructions, selected-address shape, and local package testing notes.
+The package-level documentation lives in [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md). It includes installation, minimal usage, component props, provider options, Google Cloud setup, demo instructions, selected-address shape, explicit lookup behavior, and local package testing notes.
 
 ## Work plan
 
@@ -46,7 +46,7 @@ Suggestions are worldwide by default. To restrict a field to the United States, 
 <AddressAutocompleteInput countryCodes={['US']} provider={provider} value={address} onValueChange={setAddress} />
 ```
 
-The package README contains the full prop reference, including request options, render props, portal dropdown options, and loading-state props.
+The package README contains the full prop reference, including request options, render props, portal dropdown options, explicit lookup behavior, and loading-state props: [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md).
 
 ## Development
 

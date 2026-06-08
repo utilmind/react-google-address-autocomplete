@@ -27,7 +27,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Review the public API after the portal dropdown and demo modal are tested in real apps.
 - [ ] Define error states and retry behavior in the rendered component.
 - [x] Define controlled value behavior for manual typing versus selected place data.
-- [x] Decide `onAddressSelect` behavior: fire only when a dropdown suggestion is selected; do not geocode free text implicitly.
+- [x] Decide `onAddressSelect` behavior: fire only on dropdown suggestion selection; never look up free text implicitly on blur.
 - [x] Decide which Google request options should be exposed directly beyond the current first pass.
 
 ## 2. Google Places provider
@@ -43,6 +43,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add provider-level unit tests with mocked Google globals.
 - [x] Add loader unit tests for existing globals and script injection.
 - [ ] Revisit provider error classes after component-level error rendering is implemented.
+- [x] Add explicit provider-level `lookupAddress()` for button-driven free-text Places lookup.
 
 ## 3. Address parsing
 
@@ -96,6 +97,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add a basic demo page.
 - [x] Add country restriction examples.
 - [x] Add a form-fill example that populates address, city, state, ZIP, country, latitude, and longitude.
+- [x] Add a button-driven explicit lookup example for separate address fields; no blur lookup.
 - [x] Polish the demo suggestion dropdown to be closer to the old Typeahead look.
 - [x] Add compact one-line suggestion rendering in the first demo.
 - [x] Add a separate form-fill suggestion style without yellow match backgrounds.
@@ -137,6 +139,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document browser autofill behavior and override options.
 - [x] Document component props and provider request options.
 - [ ] Document known limitations.
+- [x] Document explicit free-text lookup behavior and clarify that blur does not trigger lookup.
 
 ## 9. Release and npm publication
 
@@ -159,5 +162,5 @@ This is the living implementation plan for the component repository. Update it o
 - Browser autofill suppression is best effort. `autoComplete="one-time-code"` currently behaves better than `new-password` in the demo, but keep monitoring Chrome/Safari behavior with real saved profiles.
 
 - Should `postalCodeFull` be added as a convenience field?
-- The component stays selection-only for now. A free-text geocode fallback should be a separate explicit feature if it is added later.
+- Provider exposes explicit `lookupAddress()` for user-triggered Places lookup; component stays selection-only and does not look up free text on blur.
 - Should the component ship an optional default CSS file before `1.0.0`, or should styling remain fully user-owned?

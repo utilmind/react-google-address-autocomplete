@@ -17,6 +17,7 @@ export interface GoogleLatLngLike {
 export interface GooglePlaceAddressLike {
     id?: string | null
     placeId?: string | null
+    place_id?: string | null
     formattedAddress?: string | null
     formatted_address?: string | null
     addressComponents?: readonly GoogleAddressComponentLike[] | null
@@ -44,7 +45,7 @@ export function parseGooglePlaceAddress(place: GooglePlaceAddressLike): Selected
     const coordinates = getCoordinates(place)
 
     return {
-        placeId: place.id ?? place.placeId ?? '',
+        placeId: place.id ?? place.placeId ?? place.place_id ?? '',
         formattedAddress: place.formattedAddress ?? place.formatted_address ?? '',
         addressLine1: joinNonEmpty([streetNumber.longText, route.longText], ' '),
         addressLine2: subpremise.longText,

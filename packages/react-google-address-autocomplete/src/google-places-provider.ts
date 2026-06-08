@@ -4,7 +4,12 @@ import {
     type GoogleMapsGlobalLike,
     type GoogleMapsLoaderOptions,
 } from './google-maps-loader'
-import type { AddressAutocompleteProvider, AddressAutocompleteRequestOptions, AddressSuggestion } from './types'
+import type {
+    AddressAutocompleteProvider,
+    AddressAutocompleteRequestOptions,
+    AddressSuggestion,
+    SelectedAddress,
+} from './types'
 
 type GoogleAutocompleteSessionTokenLike = object
 
@@ -127,19 +132,32 @@ export function createGooglePlacesAutocompleteProvider(
                 )
             }
 
-            if (!prediction.toPlace) {
-                throw new Error('Google PlacePrediction.toPlace() is unavailable for the selected suggestion.')
-            }
-
-            const place = prediction.toPlace()
-            const fields = options.placeFields ?? defaultPlaceFields
-            const fetchResult = await place.fetchFields?.({ fields })
-            const hydratedPlace = getHydratedPlace(fetchResult) ?? place
-            const selectedAddress = parseGooglePlaceAddress(hydratedPlace)
+            const selectedAddress = await fetchSelectedAddressForPrediction(prediction)
 
             provider.resetSession?.()
 
             return selectedAddress
+        },
+
+        async lookupAddress(query, requestOptions): Promise<SelectedAddress | null> {
+            const input = query.trim()
+
+            if (!input) {
+                return null
+            }
+
+            const places = await getPlacesLibrary()
+            const effectiveOptions = mergeRequestOptions(options.defaultRequestOptions, requestOptions)
+            const response = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+                input,
+                sessionToken: new places.AutocompleteSessionToken(),
+                ...toGoogleAutocompleteRequestOptions(effectiveOptions),
+            })
+            const prediction = (response.suggestions ?? [])
+                .map((suggestion) => suggestion.placePrediction)
+                .find(isPlacePrediction)
+
+            return prediction ? fetchSelectedAddressForPrediction(prediction) : null
         },
 
         resetSession() {
@@ -153,6 +171,19 @@ export function createGooglePlacesAutocompleteProvider(
     async function getPlacesLibrary(): Promise<GooglePlacesLibraryLike> {
         placesLibraryPromise ??= loadPlacesLibrary(options)
         return placesLibraryPromise
+    }
+
+    async function fetchSelectedAddressForPrediction(prediction: GooglePlacePredictionLike): Promise<SelectedAddress> {
+        if (!prediction.toPlace) {
+            throw new Error('Google PlacePrediction.toPlace() is unavailable for the selected suggestion.')
+        }
+
+        const place = prediction.toPlace()
+        const fields = options.placeFields ?? defaultPlaceFields
+        const fetchResult = await place.fetchFields?.({ fields })
+        const hydratedPlace = getHydratedPlace(fetchResult) ?? place
+
+        return parseGooglePlaceAddress(hydratedPlace)
     }
 
     function getSessionToken(places: GooglePlacesLibraryLike): GoogleAutocompleteSessionTokenLike {
