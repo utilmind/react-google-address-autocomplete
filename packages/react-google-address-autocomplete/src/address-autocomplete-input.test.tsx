@@ -52,6 +52,7 @@ function StatefulAddressInput({
     showLoading,
     loadingText,
     renderLoading,
+    countryCodes,
 }: {
     dropdownPortal?: boolean
     provider?: AddressAutocompleteProvider
@@ -62,12 +63,14 @@ function StatefulAddressInput({
     showLoading?: boolean
     loadingText?: string
     renderLoading?: () => string
+    countryCodes?: readonly string[]
 }) {
     const [value, setValue] = useState('')
 
     return (
         <AddressAutocompleteInput
             debounceMs={0}
+            countryCodes={countryCodes}
             dropdownPortal={dropdownPortal}
             label="Address"
             placeholder="Start typing"
@@ -170,6 +173,18 @@ describe('AddressAutocompleteInput', () => {
             '13133',
             expect.objectContaining({ countryCodes: undefined }),
         )
+    })
+
+    it('passes country restrictions to the provider', async () => {
+        const user = userEvent.setup()
+        const provider = createMockProvider()
+
+        render(<StatefulAddressInput countryCodes={['US']} provider={provider} />)
+
+        await user.type(screen.getByLabelText('Address'), '13133')
+        await screen.findByRole('option', { name: /13133 34th Street North/i })
+
+        expect(provider.getSuggestions).toHaveBeenCalledWith('13133', expect.objectContaining({ countryCodes: ['US'] }))
     })
 
     it('selects a suggestion with the mouse', async () => {

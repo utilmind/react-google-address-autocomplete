@@ -28,7 +28,7 @@ This is the living implementation plan for the component repository. Update it o
 - [ ] Define error states and retry behavior in the rendered component.
 - [x] Define controlled value behavior for manual typing versus selected place data.
 - [ ] Decide whether `onAddressSelect` should fire only on dropdown selection or also on exact free-text geocode fallback.
-- [ ] Decide which Google request options should be exposed directly beyond the current first pass.
+- [x] Decide which Google request options should be exposed directly beyond the current first pass.
 
 ## 2. Google Places provider
 
@@ -94,7 +94,7 @@ This is the living implementation plan for the component repository. Update it o
 
 - [x] Add `.env` support for a browser Google Maps API key.
 - [x] Add a basic demo page.
-- [ ] Add country restriction examples.
+- [x] Add country restriction examples.
 - [x] Add a form-fill example that populates address, city, state, ZIP, country, latitude, and longitude.
 - [x] Polish the demo suggestion dropdown to be closer to the old Typeahead look.
 - [x] Add compact one-line suggestion rendering in the first demo.
@@ -135,6 +135,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document form-fill usage and custom selected input values.
 - [x] Document highlighted suggestion preview behavior.
 - [x] Document browser autofill behavior and override options.
+- [x] Document component props and provider request options.
 - [ ] Document known limitations.
 
 ## 9. Release and npm publication

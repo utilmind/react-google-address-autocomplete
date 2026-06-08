@@ -14,7 +14,7 @@ This repository is in early implementation. The current package includes:
 - keyboard navigation for ArrowUp, ArrowDown, Enter, Escape, and Tab;
 - optional Twitter Typeahead-style highlighted suggestion preview in the input;
 - optional dropdown portal rendering for dialogs/modals;
-- form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude;
+- form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude, with US-only search restrictions;
 - dark themed demo dropdown styling with a Lucide-style map-pin icon, loading spinner, and themed scrollbars;
 - browser-autofill-resistant defaults for address search inputs;
 - optional loading row rendering, hidden by default;
@@ -33,6 +33,16 @@ See [TODO.md](./TODO.md). Keep it updated on every patch.
 
 The old jQuery/Twitter Typeahead implementation is kept only as a reference archive at
 [`jquery-legacy/geo-dropdown.js`](./jquery-legacy/geo-dropdown.js). It is intentionally excluded from Prettier formatting so the historical file stays untouched.
+
+## Restricting suggestions
+
+Suggestions are worldwide by default. To restrict a field to the United States, pass `countryCodes` to the component:
+
+```tsx
+<AddressAutocompleteInput countryCodes={['US']} provider={provider} value={address} onValueChange={setAddress} />
+```
+
+The package README contains the full prop reference, including request options, render props, portal dropdown options, and loading-state props.
 
 ## Development
 

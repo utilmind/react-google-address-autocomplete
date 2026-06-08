@@ -204,7 +204,15 @@ function mergeRequestOptions(
 ): AddressAutocompleteRequestOptions {
     return {
         ...(defaults ?? {}),
-        ...(overrides ?? {}),
+        ...removeUndefinedValues({
+            countryCodes: overrides?.countryCodes,
+            includedPrimaryTypes: overrides?.includedPrimaryTypes,
+            language: overrides?.language,
+            region: overrides?.region,
+            locationBias: overrides?.locationBias,
+            locationRestriction: overrides?.locationRestriction,
+            origin: overrides?.origin,
+        }),
     }
 }
 

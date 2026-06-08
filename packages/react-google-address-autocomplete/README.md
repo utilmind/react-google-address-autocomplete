@@ -54,6 +54,82 @@ export function AddressField() {
 }
 ```
 
+## Restricting the search area
+
+The component is unrestricted by default. To restrict suggestions to a country or group of countries, pass `countryCodes` directly to `AddressAutocompleteInput`. The Google provider maps this option to the Places Autocomplete Data API region restriction for suggestions.
+
+```tsx
+<AddressAutocompleteInput
+    countryCodes={['US']}
+    label="Address"
+    provider={provider}
+    value={address}
+    onValueChange={setAddress}
+/>
+```
+
+You can also make a provider default when every input in an app should use the same restriction:
+
+```ts
+const provider = createGooglePlacesAutocompleteProvider({
+    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    defaultRequestOptions: {
+        countryCodes: ['US'],
+        language: 'en',
+        region: 'US',
+    },
+})
+```
+
+Input-level props win over provider defaults, so a reusable provider can still be overridden per field.
+
+## Component props
+
+`AddressAutocompleteInput` is a controlled, headless component. It forwards most regular `<input>` props, except for props that would conflict with its controlled behavior (`value`, `onChange`, `type`, `className`, `children`, and `onSelect`).
+
+| Prop                                 | Type                                               | Default                           | Description                                                                                       |
+| ------------------------------------ | -------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `value`                              | `string`                                           | required                          | Current input value.                                                                              |
+| `onValueChange`                      | `(value: string) => void`                          | required                          | Called when the user types or when a selected suggestion commits a new input value.               |
+| `provider`                           | `AddressAutocompleteProvider`                      | `undefined`                       | Suggestion/details provider. Use `createGooglePlacesAutocompleteProvider()` for Google Places.    |
+| `onAddressSelect`                    | `(address: SelectedAddress) => void`               | `undefined`                       | Called after the user selects a suggestion and place details are parsed.                          |
+| `getSelectedAddressInputValue`       | `(address, suggestion) => string`                  | formatted address                 | Controls what text is committed to the input after selection. Useful for street-only form fields. |
+| `previewHighlightedSuggestion`       | `boolean`                                          | `false`                           | Shows the highlighted suggestion in the input during arrow-key navigation without committing it.  |
+| `getHighlightedSuggestionInputValue` | `(suggestion) => string`                           | suggestion full text              | Controls preview text when `previewHighlightedSuggestion` is enabled.                             |
+| `label`                              | `ReactNode`                                        | `undefined`                       | Optional label rendered above the input and connected with `htmlFor`.                             |
+| `minQueryLength`                     | `number`                                           | `1`                               | Minimum trimmed query length before suggestions are fetched.                                      |
+| `debounceMs`                         | `number`                                           | `250`                             | Debounce delay before fetching suggestions.                                                       |
+| `maxSuggestions`                     | `number`                                           | `5`                               | Maximum suggestions rendered by the component after provider results return.                      |
+| `countryCodes`                       | `readonly string[]`                                | unrestricted                      | Restricts suggestions to countries such as `['US']`.                                              |
+| `includedPrimaryTypes`               | `readonly string[]`                                | `undefined`                       | Restricts Google predictions to primary place types when the provider supports it.                |
+| `language`                           | `string`                                           | provider/default browser behavior | Preferred language for suggestions.                                                               |
+| `region`                             | `string`                                           | provider/default browser behavior | Region hint used by Google for result formatting/ranking.                                         |
+| `locationBias`                       | `unknown`                                          | `undefined`                       | Biases suggestions toward an area when the provider supports it.                                  |
+| `locationRestriction`                | `unknown`                                          | `undefined`                       | Restricts suggestions to an area when the provider supports it.                                   |
+| `origin`                             | `{ lat: number; lng: number }`                     | `undefined`                       | Origin point for distance/ranking when the provider supports it.                                  |
+| `showLoading`                        | `boolean`                                          | `false`                           | Shows a loading row while suggestions are being fetched.                                          |
+| `loadingText`                        | `ReactNode`                                        | `Loading…`                        | Localizable fallback loading content.                                                             |
+| `renderLoading`                      | `(state) => ReactNode`                             | `undefined`                       | Fully custom loading row renderer.                                                                |
+| `renderEmpty`                        | `(state) => ReactNode`                             | `No addresses found`              | Custom empty-state row renderer.                                                                  |
+| `renderError`                        | `(state) => ReactNode`                             | error message                     | Custom error-state row renderer.                                                                  |
+| `renderSuggestion`                   | `(props) => ReactNode`                             | built-in minimal markup           | Custom suggestion row renderer.                                                                   |
+| `className`                          | `string`                                           | `undefined`                       | Wrapper class name.                                                                               |
+| `inputClassName`                     | `string`                                           | `undefined`                       | Input class name.                                                                                 |
+| `dropdownClassName`                  | `string`                                           | `undefined`                       | Dropdown/listbox class name.                                                                      |
+| `dropdownStyle`                      | `CSSProperties`                                    | `undefined`                       | Inline style for the dropdown. Also merged into portal positioning styles.                        |
+| `suggestionClassName`                | `string`                                           | `undefined`                       | Suggestion row class name.                                                                        |
+| `highlightedSuggestionClassName`     | `string`                                           | `undefined`                       | Extra class name for the highlighted suggestion row.                                              |
+| `statusMessageClassName`             | `string`                                           | `undefined`                       | Class name for loading, empty, and error rows.                                                    |
+| `dropdownPortal`                     | `boolean`                                          | `false`                           | Renders the dropdown through a portal, useful inside dialogs and clipped containers.              |
+| `dropdownPortalContainer`            | `HTMLElement \| null \| () => HTMLElement \| null` | `document.body`                   | Portal target when `dropdownPortal` is enabled.                                                   |
+| `dropdownPortalOffset`               | `number`                                           | `6`                               | Vertical offset between input and portal dropdown.                                                |
+| `autoComplete`                       | regular input prop                                 | `one-time-code`                   | Browser-autofill suppression value. Override only when native autofill is desired.                |
+| `name`                               | regular input prop                                 | generated neutral name            | Neutral generated name helps suppress browser profile autofill.                                   |
+
+## Provider request options
+
+These component props are passed to `provider.getSuggestions(query, options)`: `countryCodes`, `includedPrimaryTypes`, `language`, `region`, `locationBias`, `locationRestriction`, and `origin`. The built-in Google provider merges them with `defaultRequestOptions` from `createGooglePlacesAutocompleteProvider()`. Component props override provider defaults.
+
 ## Highlighted suggestion preview
 
 By default, arrow-key navigation only changes the highlighted dropdown item. The typed query stays in the input until the user selects a suggestion. To mimic Twitter Typeahead-style behavior where the highlighted item is previewed inside the input during keyboard navigation, enable `previewHighlightedSuggestion`.

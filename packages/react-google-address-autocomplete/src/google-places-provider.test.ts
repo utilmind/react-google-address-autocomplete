@@ -89,6 +89,37 @@ describe('createGooglePlacesAutocompleteProvider', () => {
         ])
     })
 
+    it('keeps provider defaults when component-level request options are undefined', async () => {
+        const fetchAutocompleteSuggestions = vi.fn().mockResolvedValue({ suggestions: [] })
+        const importLibrary = vi.fn().mockResolvedValue({
+            AutocompleteSessionToken: MockAutocompleteSessionToken,
+            AutocompleteSuggestion: { fetchAutocompleteSuggestions },
+        })
+        const provider = createGooglePlacesAutocompleteProvider({
+            apiKey: 'test-key',
+            defaultRequestOptions: {
+                countryCodes: ['US'],
+                language: 'en',
+                region: 'US',
+            },
+            loadGoogleMaps: async () => ({ maps: { importLibrary } }),
+        })
+
+        await provider.getSuggestions('13133', {
+            countryCodes: undefined,
+            language: undefined,
+            region: undefined,
+        })
+
+        expect(fetchAutocompleteSuggestions).toHaveBeenCalledWith(
+            expect.objectContaining({
+                includedRegionCodes: ['US'],
+                language: 'en',
+                region: 'US',
+            }),
+        )
+    })
+
     it('uses the cached place prediction to fetch selected place details and reset the session', async () => {
         const place = {
             id: 'place-1',

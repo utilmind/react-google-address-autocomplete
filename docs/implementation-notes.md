@@ -115,7 +115,7 @@ The Google provider ignores stale autocomplete responses by default. If request 
 
 ## Demo app policy
 
-The demo app is a Vite workspace and should be run with pnpm from the repository root. The root `dev` script delegates to `apps/demo`. Keep the demo intentionally close to real application usage: a basic inline input, a form-fill example, and a portal dropdown example for modal/dialog shells.
+The demo app is a Vite workspace and should be run with pnpm from the repository root. The root `dev` script delegates to `apps/demo`. Keep the demo intentionally close to real application usage: a basic inline input, a US-only form-fill example, and a portal dropdown example for modal/dialog shells. The basic inline input stays worldwide so the demo shows both unrestricted and country-restricted request options.
 
 The browser key belongs in `apps/demo/.env` as `VITE_GOOGLE_MAPS_API_KEY`. Do not commit real API keys.
 
