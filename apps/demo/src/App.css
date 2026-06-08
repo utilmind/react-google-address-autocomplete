@@ -117,35 +117,11 @@ h2 {
     top: calc(100% + 6px);
     right: 0;
     left: 0;
-    max-height: min(360px, calc(100vh - 120px));
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
     border: 1px solid #3d3d3d;
     border-radius: 12px;
     background: #101010;
     box-shadow: 0 20px 50px rgb(0 0 0 / 45%);
-    scrollbar-color: #525252 #101010;
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
-}
-
-.dropdown::-webkit-scrollbar {
-    width: 10px;
-}
-
-.dropdown::-webkit-scrollbar-track {
-    border-radius: 999px;
-    background: #101010;
-}
-
-.dropdown::-webkit-scrollbar-thumb {
-    border: 2px solid #101010;
-    border-radius: 999px;
-    background: #525252;
-}
-
-.dropdown::-webkit-scrollbar-thumb:hover {
-    background: #737373;
 }
 
 .suggestion,
@@ -155,27 +131,6 @@ h2 {
 
 .suggestion {
     cursor: pointer;
-}
-
-.suggestionContent {
-    display: grid;
-    grid-template-columns: 20px minmax(0, 1fr);
-    align-items: start;
-    gap: 10px;
-}
-
-.suggestionIcon {
-    margin-top: 2px;
-    color: #9ca3af;
-}
-
-.suggestionText {
-    min-width: 0;
-}
-
-.suggestionMainText {
-    overflow-wrap: anywhere;
-    font-weight: 700;
 }
 
 .suggestion small {
