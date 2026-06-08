@@ -117,9 +117,10 @@ h2 {
     top: calc(100% + 6px);
     right: 0;
     left: 0;
-    overflow: hidden;
+    overflow: hidden auto;
+    max-height: 320px;
     border: 1px solid #3d3d3d;
-    border-radius: 12px;
+    border-radius: 8px;
     background: #101010;
     box-shadow: 0 20px 50px rgb(0 0 0 / 45%);
 }
@@ -130,7 +131,22 @@ h2 {
 }
 
 .suggestion {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
     cursor: pointer;
+}
+
+.suggestion::before {
+    content: '⌖';
+    color: #9ca3af;
+    font-size: 17px;
+    line-height: 1.25;
+}
+
+.suggestion > div > div:first-child {
+    font-weight: 700;
 }
 
 .suggestion small {
@@ -146,6 +162,7 @@ h2 {
     padding: 0 2px;
 }
 
+.suggestion:hover,
 .suggestionHighlighted {
     background: #262626;
 }
