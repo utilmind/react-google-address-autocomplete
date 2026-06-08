@@ -63,7 +63,7 @@ export default function App() {
 
                     <AddressAutocompleteInput
                         className="field"
-                        dropdownClassName="dropdown"
+                        dropdownClassName="dropdown singleLineDropdown"
                         highlightedSuggestionClassName="suggestionHighlighted"
                         inputClassName="input"
                         label="Address"
@@ -73,7 +73,7 @@ export default function App() {
                         statusMessageClassName="statusMessage"
                         suggestionClassName="suggestion"
                         value={address}
-                        renderSuggestion={renderAddressSuggestion}
+                        renderSuggestion={renderSingleLineAddressSuggestion}
                         onAddressSelect={setSelectedAddress}
                         onValueChange={setAddress}
                         renderError={(state) => state.error?.message ?? 'Address lookup failed'}
@@ -100,11 +100,11 @@ export default function App() {
                     <div className="form-grid">
                         <AddressAutocompleteInput
                             className="field form-field form-field-wide"
-                            dropdownClassName="dropdown"
+                            dropdownClassName="dropdown formDropdown"
                             getSelectedAddressInputValue={(selected) =>
                                 selected.addressLine1 || selected.formattedAddress
                             }
-                            highlightedSuggestionClassName="suggestionHighlighted"
+                            highlightedSuggestionClassName="suggestionHighlighted formSuggestionHighlighted"
                             getHighlightedSuggestionInputValue={(suggestion) =>
                                 suggestion.mainText || suggestion.fullText
                             }
@@ -114,7 +114,7 @@ export default function App() {
                             previewHighlightedSuggestion
                             provider={formProvider}
                             statusMessageClassName="statusMessage"
-                            suggestionClassName="suggestion"
+                            suggestionClassName="suggestion formSuggestion"
                             value={formFields.address}
                             renderSuggestion={renderAddressSuggestion}
                             onAddressSelect={(selected) => {
@@ -240,6 +240,22 @@ export default function App() {
                 </div>
             ) : null}
         </main>
+    )
+}
+
+function renderSingleLineAddressSuggestion({ suggestion }: AddressAutocompleteRenderSuggestionProps) {
+    return (
+        <div className="singleLineSuggestion">
+            <DemoMapPinIcon className="suggestionIcon" />
+            <span className="singleLineSuggestionText">
+                <span className="suggestionMainText">
+                    {renderMatchedText(suggestion.mainText || suggestion.fullText, suggestion.mainTextMatches)}
+                </span>
+                {suggestion.secondaryText ? (
+                    <span className="singleLineSecondaryText">, {suggestion.secondaryText}</span>
+                ) : null}
+            </span>
+        </div>
     )
 }
 

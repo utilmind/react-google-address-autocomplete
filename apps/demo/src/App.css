@@ -91,8 +91,8 @@ h2 {
     margin-top: 28px;
 }
 
-.field label,
-.field span {
+.field > label,
+.field > span {
     font-weight: 700;
 }
 
@@ -117,7 +117,6 @@ h2 {
     top: calc(100% + 6px);
     right: 0;
     left: 0;
-    overflow: hidden auto;
     max-height: min(360px, calc(100vh - 120px));
     overflow-x: hidden;
     overflow-y: auto;
@@ -126,7 +125,6 @@ h2 {
     background: #101010;
     box-shadow: 0 20px 50px rgb(0 0 0 / 45%);
     scrollbar-color: #525252 #101010;
-    scrollbar-gutter: stable;
     scrollbar-width: thin;
 }
 
@@ -165,18 +163,46 @@ h2 {
     gap: 10px;
 }
 
+.singleLineSuggestion {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+}
+
 .suggestionIcon {
+    flex: 0 0 auto;
     margin-top: 2px;
     color: #9ca3af;
 }
 
-.suggestionText {
+.singleLineSuggestion .suggestionIcon {
+    margin-top: 0;
+}
+
+.suggestionText,
+.singleLineSuggestionText {
     min-width: 0;
+}
+
+.singleLineSuggestionText {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .suggestionMainText {
     overflow-wrap: anywhere;
     font-weight: 700;
+}
+
+.singleLineSuggestion .suggestionMainText {
+    overflow-wrap: normal;
+}
+
+.singleLineSecondaryText {
+    color: #c7c7c7;
 }
 
 .suggestion small {
@@ -199,6 +225,32 @@ h2 {
 
 .statusMessage {
     color: #c7c7c7;
+}
+
+.singleLineDropdown .suggestion,
+.singleLineDropdown .statusMessage {
+    padding: 10px 14px;
+}
+
+.formDropdown .formSuggestion {
+    font-weight: 600;
+}
+
+.formDropdown .formSuggestion mark {
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font-weight: 800;
+    padding: 0;
+}
+
+.formDropdown .formSuggestion small {
+    font-weight: 500;
+}
+
+.formDropdown .formSuggestionHighlighted,
+.formDropdown .formSuggestion:hover {
+    background: #262626;
 }
 
 .form-grid {
