@@ -25,6 +25,10 @@ This repository is in early implementation. The current package includes:
 
 The next major step is hardening edge cases: disabled/read-only behavior, touch selection, more accessibility checks, and broader real-world demo coverage.
 
+## Package documentation
+
+The package-level documentation lives in [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md). It includes installation, minimal usage, component props, provider options, Google Cloud setup, demo instructions, selected-address shape, and local package testing notes.
+
 ## Work plan
 
 See [TODO.md](./TODO.md). Keep it updated on every patch.

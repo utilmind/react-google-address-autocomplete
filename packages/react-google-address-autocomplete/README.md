@@ -92,7 +92,7 @@ Input-level props win over provider defaults, so a reusable provider can still b
 | `value`                              | `string`                                           | required                          | Current input value.                                                                              |
 | `onValueChange`                      | `(value: string) => void`                          | required                          | Called when the user types or when a selected suggestion commits a new input value.               |
 | `provider`                           | `AddressAutocompleteProvider`                      | `undefined`                       | Suggestion/details provider. Use `createGooglePlacesAutocompleteProvider()` for Google Places.    |
-| `onAddressSelect`                    | `(address: SelectedAddress) => void`               | `undefined`                       | Called after the user selects a suggestion and place details are parsed.                          |
+| `onAddressSelect`                    | `(address: SelectedAddress) => void`               | `undefined`                       | Called only after the user selects a dropdown suggestion and place details are parsed.            |
 | `getSelectedAddressInputValue`       | `(address, suggestion) => string`                  | formatted address                 | Controls what text is committed to the input after selection. Useful for street-only form fields. |
 | `previewHighlightedSuggestion`       | `boolean`                                          | `false`                           | Shows the highlighted suggestion in the input during arrow-key navigation without committing it.  |
 | `getHighlightedSuggestionInputValue` | `(suggestion) => string`                           | suggestion full text              | Controls preview text when `previewHighlightedSuggestion` is enabled.                             |
@@ -129,6 +129,12 @@ Input-level props win over provider defaults, so a reusable provider can still b
 ## Provider request options
 
 These component props are passed to `provider.getSuggestions(query, options)`: `countryCodes`, `includedPrimaryTypes`, `language`, `region`, `locationBias`, `locationRestriction`, and `origin`. The built-in Google provider merges them with `defaultRequestOptions` from `createGooglePlacesAutocompleteProvider()`. Component props override provider defaults.
+
+## Selection behavior
+
+`onAddressSelect` fires only when the user commits one of the dropdown suggestions, either by mouse/touch interaction or keyboard selection. Free typing only calls `onValueChange`; it does not geocode the typed text and does not call `onAddressSelect`.
+
+The package intentionally does not provide a free-text geocode fallback today. A free-text fallback would mean taking raw text typed by the user, such as `1600 Amphitheatre Parkway`, sending it to a geocoder when no dropdown option was selected, and treating an exact geocode match as a selected address. That behavior can be useful in some apps, but it is easier to misfire and should be a separate explicit feature if it is ever added.
 
 ## Highlighted suggestion preview
 
@@ -273,6 +279,54 @@ const selectedAddress = await provider.selectSuggestion(suggestions[0])
 ```
 
 The provider loads the Google Maps JavaScript API in the browser, imports the `places` library, calls `AutocompleteSuggestion.fetchAutocompleteSuggestions()`, and fetches selected place details through the original `PlacePrediction`. It creates one Google `AutocompleteSessionToken` per autocomplete session and resets that token after a successful selection.
+
+## Manual local package build
+
+Use this flow to build the package into a local `.tgz` file and install it in another project without publishing to npm.
+
+From the repository root in Git Bash, WSL, macOS, or Linux:
+
+```bash
+pnpm install
+pnpm --filter react-google-address-autocomplete build
+mkdir -p vendor/npm
+pnpm --dir packages/react-google-address-autocomplete pack --pack-destination ../../vendor/npm
+```
+
+From PowerShell on Windows:
+
+```powershell
+pnpm install
+pnpm --filter react-google-address-autocomplete build
+New-Item -ItemType Directory -Force vendor/npm | Out-Null
+pnpm --dir packages/react-google-address-autocomplete pack --pack-destination ../../vendor/npm
+```
+
+The last command writes a file similar to:
+
+```text
+vendor/npm/react-google-address-autocomplete-0.0.0.tgz
+```
+
+Copy that `.tgz` file into your application repository, for example:
+
+```text
+your-app/vendor/npm/react-google-address-autocomplete-0.0.0.tgz
+```
+
+Then install it from the application repository. With pnpm:
+
+```bash
+pnpm add ./vendor/npm/react-google-address-autocomplete-0.0.0.tgz
+```
+
+With npm:
+
+```bash
+npm install ./vendor/npm/react-google-address-autocomplete-0.0.0.tgz
+```
+
+If your app already has the package installed from an older `.tgz`, remove the old lockfile entry or run the same install command again after replacing the file. Keep the package version or tarball filename unique when you want the package manager to reliably pick up a new local build.
 
 ## Demo app
 

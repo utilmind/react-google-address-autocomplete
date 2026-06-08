@@ -27,7 +27,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Review the public API after the portal dropdown and demo modal are tested in real apps.
 - [ ] Define error states and retry behavior in the rendered component.
 - [x] Define controlled value behavior for manual typing versus selected place data.
-- [ ] Decide whether `onAddressSelect` should fire only on dropdown selection or also on exact free-text geocode fallback.
+- [x] Decide `onAddressSelect` behavior: fire only when a dropdown suggestion is selected; do not geocode free text implicitly.
 - [x] Decide which Google request options should be exposed directly beyond the current first pass.
 
 ## 2. Google Places provider
@@ -159,5 +159,5 @@ This is the living implementation plan for the component repository. Update it o
 - Browser autofill suppression is best effort. `autoComplete="one-time-code"` currently behaves better than `new-password` in the demo, but keep monitoring Chrome/Safari behavior with real saved profiles.
 
 - Should `postalCodeFull` be added as a convenience field?
-- Should the provider expose a free-text geocode fallback, or should the component stay selection-only?
+- The component stays selection-only for now. A free-text geocode fallback should be a separate explicit feature if it is added later.
 - Should the component ship an optional default CSS file before `1.0.0`, or should styling remain fully user-owned?
