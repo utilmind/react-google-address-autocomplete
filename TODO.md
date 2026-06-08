@@ -87,6 +87,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Remove reserved scrollbar gutter from the demo dropdown when scrolling is not needed.
 - [x] Add a Lucide-style map-pin icon to demo suggestions.
 - [x] Add a Lucide-style loading spinner to the first demo loading state.
+- [x] Add a Lucide-style map-pin-search icon to the form Lookup button.
 - [x] Add a portal dropdown demo for a clipped modal/dialog shell.
 - [ ] Verify dropdown z-index behavior inside real app dialogs.
 - [ ] Verify narrow/mobile layout.
@@ -104,6 +105,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add an example inside a modal/dialog.
 - [ ] Add error-state and empty-state examples.
 - [x] Add README instructions for enabling Google Places API.
+- [x] Log demo autocomplete and explicit lookup events to the browser console.
 
 ## 7. Testing
 
@@ -139,6 +141,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document highlighted suggestion preview behavior.
 - [x] Document browser autofill behavior and override options.
 - [x] Document component props and provider request options.
+- [x] Split the package README API reference into properties/options, events, and provider methods.
 - [ ] Document known limitations.
 - [x] Document explicit free-text lookup behavior and clarify that blur does not trigger lookup.
 

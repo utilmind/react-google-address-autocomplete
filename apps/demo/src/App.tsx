@@ -62,19 +62,23 @@ export default function App() {
 
         setIsFormLookupPending(true)
         setFormLookupError(null)
+        logDemoEvent('form:lookupAddress:start', { query: formLookupQuery })
 
         try {
             const lookedUpAddress = await formProvider.lookupAddress(formLookupQuery)
 
             if (!lookedUpAddress) {
+                logDemoEvent('form:lookupAddress:noResult', { query: formLookupQuery })
                 setSelectedFormAddress(null)
                 setFormLookupError('No matching address found.')
                 return
             }
 
+            logDemoEvent('form:lookupAddress:success', lookedUpAddress)
             setSelectedFormAddress(lookedUpAddress)
             setFormFields(selectedAddressToFormState(lookedUpAddress))
         } catch (reason) {
+            logDemoEvent('form:lookupAddress:error', reason)
             setSelectedFormAddress(null)
             setFormLookupError(toErrorMessage(reason))
         } finally {
@@ -116,8 +120,14 @@ export default function App() {
                         renderLoading={renderInlineLoading}
                         value={address}
                         renderSuggestion={renderSingleLineAddressSuggestion}
-                        onAddressSelect={setSelectedAddress}
-                        onValueChange={setAddress}
+                        onAddressSelect={(nextSelectedAddress) => {
+                            logDemoEvent('inline:onAddressSelect', nextSelectedAddress)
+                            setSelectedAddress(nextSelectedAddress)
+                        }}
+                        onValueChange={(nextAddress) => {
+                            logDemoEvent('inline:onValueChange', nextAddress)
+                            setAddress(nextAddress)
+                        }}
                         renderError={(state) => state.error?.message ?? 'Address lookup failed'}
                     />
 
@@ -164,11 +174,13 @@ export default function App() {
                                     value={formFields.address}
                                     renderSuggestion={renderAddressSuggestion}
                                     onAddressSelect={(selected) => {
+                                        logDemoEvent('form:onAddressSelect', selected)
                                         setFormLookupError(null)
                                         setSelectedFormAddress(selected)
                                         setFormFields(selectedAddressToFormState(selected))
                                     }}
                                     onValueChange={(nextAddress) => {
+                                        logDemoEvent('form:onValueChange', nextAddress)
                                         updateFormField('address', nextAddress)
                                     }}
                                 />
@@ -180,11 +192,14 @@ export default function App() {
                                     onClick={() => void handleFormAddressLookup()}
                                     onMouseDown={(event) => event.preventDefault()}
                                 >
-                                    {isFormLookupPending ? (
-                                        <DemoSpinnerIcon className="loadingSpinner" />
-                                    ) : (
-                                        'Lookup'
-                                    )}
+                                    <span className="inputInlineButtonContent">
+                                        {isFormLookupPending ? (
+                                            <DemoSpinnerIcon className="loadingSpinner" />
+                                        ) : (
+                                            <DemoMapPinSearchIcon className="buttonIcon" />
+                                        )}
+                                        <span>Lookup</span>
+                                    </span>
                                 </button>
                             </div>
                             <small className="lookupHelpText">
@@ -292,8 +307,14 @@ export default function App() {
                             suggestionClassName="suggestion"
                             value={modalAddress}
                             renderSuggestion={renderAddressSuggestion}
-                            onAddressSelect={setSelectedModalAddress}
-                            onValueChange={setModalAddress}
+                            onAddressSelect={(nextSelectedAddress) => {
+                                logDemoEvent('modal:onAddressSelect', nextSelectedAddress)
+                                setSelectedModalAddress(nextSelectedAddress)
+                            }}
+                            onValueChange={(nextAddress) => {
+                                logDemoEvent('modal:onValueChange', nextAddress)
+                                setModalAddress(nextAddress)
+                            }}
                         />
 
                         <dl className="output">
@@ -389,6 +410,28 @@ function DemoMapPinIcon({ className }: { className?: string }) {
     )
 }
 
+function DemoMapPinSearchIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            aria-hidden="true"
+            className={className}
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            width="16"
+        >
+            <path d="M11 16.5c-1.4-1.2-5-4.7-5-8a6 6 0 0 1 10.4-4.1" />
+            <path d="M9.5 8.5a2.5 2.5 0 0 1 2.5-2.5" />
+            <circle cx="17" cy="14" r="3" />
+            <path d="m19.5 16.5 2 2" />
+        </svg>
+    )
+}
+
 function renderMatchedText(text: string, matches: readonly AddressTextMatch[]): ReactNode {
     if (!matches.length) {
         return text
@@ -421,6 +464,10 @@ function renderMatchedText(text: string, matches: readonly AddressTextMatch[]): 
 
 function clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max)
+}
+
+function logDemoEvent(eventName: string, payload: unknown) {
+    console.info(`[RGAC demo] ${eventName}`, payload)
 }
 
 function createDemoProvider(): AddressAutocompleteProvider | undefined {

@@ -137,7 +137,7 @@ h2 {
     background: #101010;
 }
 
-.dropdown:-webkit-scrollbar-thumb {
+.dropdown::-webkit-scrollbar-thumb {
     border: 2px solid #101010;
     border-radius: 999px;
     background: #525252;
@@ -389,7 +389,7 @@ h2 {
     right: 6px;
     bottom: 6px;
     display: inline-flex;
-    min-width: 84px;
+    min-width: 96px;
     align-items: center;
     justify-content: center;
     border: 1px solid #3d3d3d;
@@ -400,6 +400,17 @@ h2 {
     font: inherit;
     font-weight: 700;
     padding: 0 14px;
+}
+
+.inputInlineButtonContent {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+}
+
+.buttonIcon {
+    flex: 0 0 auto;
 }
 
 .inputInlineButton:disabled {

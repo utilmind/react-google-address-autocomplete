@@ -83,19 +83,16 @@ const provider = createGooglePlacesAutocompleteProvider({
 
 Input-level props win over provider defaults, so a reusable provider can still be overridden per field.
 
-## Component props
+## Component API
 
 `AddressAutocompleteInput` is a controlled, headless component. It forwards most regular `<input>` props, except for props that would conflict with its controlled behavior (`value`, `onChange`, `type`, `className`, `children`, and `onSelect`).
+
+### Properties and options
 
 | Prop                                 | Type                                               | Default                           | Description                                                                                       |
 | ------------------------------------ | -------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `value`                              | `string`                                           | required                          | Current input value.                                                                              |
-| `onValueChange`                      | `(value: string) => void`                          | required                          | Called when the user types or when a selected suggestion commits a new input value.               |
 | `provider`                           | `AddressAutocompleteProvider`                      | `undefined`                       | Suggestion/details provider. Use `createGooglePlacesAutocompleteProvider()` for Google Places.    |
-| `onAddressSelect`                    | `(address: SelectedAddress) => void`               | `undefined`                       | Called after the user selects a suggestion and place details are parsed.                          |
-| `getSelectedAddressInputValue`       | `(address, suggestion) => string`                  | formatted address                 | Controls what text is committed to the input after selection. Useful for street-only form fields. |
-| `previewHighlightedSuggestion`       | `boolean`                                          | `false`                           | Shows the highlighted suggestion in the input during arrow-key navigation without committing it.  |
-| `getHighlightedSuggestionInputValue` | `(suggestion) => string`                           | suggestion full text              | Controls preview text when `previewHighlightedSuggestion` is enabled.                             |
 | `label`                              | `ReactNode`                                        | `undefined`                       | Optional label rendered above the input and connected with `htmlFor`.                             |
 | `minQueryLength`                     | `number`                                           | `1`                               | Minimum trimmed query length before suggestions are fetched.                                      |
 | `debounceMs`                         | `number`                                           | `250`                             | Debounce delay before fetching suggestions.                                                       |
@@ -107,24 +104,59 @@ Input-level props win over provider defaults, so a reusable provider can still b
 | `locationBias`                       | `unknown`                                          | `undefined`                       | Biases suggestions toward an area when the provider supports it.                                  |
 | `locationRestriction`                | `unknown`                                          | `undefined`                       | Restricts suggestions to an area when the provider supports it.                                   |
 | `origin`                             | `{ lat: number; lng: number }`                     | `undefined`                       | Origin point for distance/ranking when the provider supports it.                                  |
+| `getSelectedAddressInputValue`       | `(address, suggestion) => string`                  | formatted address                 | Controls what text is committed to the input after selection. Useful for street-only form fields. |
+| `previewHighlightedSuggestion`       | `boolean`                                          | `false`                           | Shows the highlighted suggestion in the input during arrow-key navigation without committing it.  |
+| `getHighlightedSuggestionInputValue` | `(suggestion) => string`                           | suggestion full text              | Controls preview text when `previewHighlightedSuggestion` is enabled.                             |
 | `showLoading`                        | `boolean`                                          | `false`                           | Shows a loading row while suggestions are being fetched.                                          |
 | `loadingText`                        | `ReactNode`                                        | `Loading…`                        | Localizable fallback loading content.                                                             |
-| `renderLoading`                      | `(state) => ReactNode`                             | `undefined`                       | Fully custom loading row renderer.                                                                |
-| `renderEmpty`                        | `(state) => ReactNode`                             | `No addresses found`              | Custom empty-state row renderer.                                                                  |
-| `renderError`                        | `(state) => ReactNode`                             | error message                     | Custom error-state row renderer.                                                                  |
-| `renderSuggestion`                   | `(props) => ReactNode`                             | built-in minimal markup           | Custom suggestion row renderer.                                                                   |
-| `className`                          | `string`                                           | `undefined`                       | Wrapper class name.                                                                               |
-| `inputClassName`                     | `string`                                           | `undefined`                       | Input class name.                                                                                 |
-| `dropdownClassName`                  | `string`                                           | `undefined`                       | Dropdown/listbox class name.                                                                      |
-| `dropdownStyle`                      | `CSSProperties`                                    | `undefined`                       | Inline style for the dropdown. Also merged into portal positioning styles.                        |
-| `suggestionClassName`                | `string`                                           | `undefined`                       | Suggestion row class name.                                                                        |
-| `highlightedSuggestionClassName`     | `string`                                           | `undefined`                       | Extra class name for the highlighted suggestion row.                                              |
-| `statusMessageClassName`             | `string`                                           | `undefined`                       | Class name for loading, empty, and error rows.                                                    |
 | `dropdownPortal`                     | `boolean`                                          | `false`                           | Renders the dropdown through a portal, useful inside dialogs and clipped containers.              |
 | `dropdownPortalContainer`            | `HTMLElement \| null \| () => HTMLElement \| null` | `document.body`                   | Portal target when `dropdownPortal` is enabled.                                                   |
 | `dropdownPortalOffset`               | `number`                                           | `6`                               | Vertical offset between input and portal dropdown.                                                |
 | `autoComplete`                       | regular input prop                                 | `one-time-code`                   | Browser-autofill suppression value. Override only when native autofill is desired.                |
 | `name`                               | regular input prop                                 | generated neutral name            | Neutral generated name helps suppress browser profile autofill.                                   |
+
+### Rendering and styling options
+
+| Prop                             | Type                   | Default                 | Description                                                                   |
+| -------------------------------- | ---------------------- | ----------------------- | ----------------------------------------------------------------------------- |
+| `className`                      | `string`               | `undefined`             | Wrapper class name.                                                           |
+| `inputClassName`                 | `string`               | `undefined`             | Input class name.                                                             |
+| `dropdownClassName`              | `string`               | `undefined`             | Dropdown/listbox class name.                                                  |
+| `dropdownStyle`                  | `CSSProperties`        | `undefined`             | Inline style for the dropdown. Also merged into portal positioning styles.    |
+| `suggestionClassName`            | `string`               | `undefined`             | Suggestion row class name.                                                    |
+| `highlightedSuggestionClassName` | `string`               | `undefined`             | Extra class name for the highlighted suggestion row.                          |
+| `statusMessageClassName`         | `string`               | `undefined`             | Class name for loading, empty, and error rows.                                |
+| `renderSuggestion`               | `(props) => ReactNode` | built-in minimal markup | Custom suggestion row renderer.                                               |
+| `renderLoading`                  | `(state) => ReactNode` | `undefined`             | Fully custom loading row renderer. Requires `showLoading` to show loading UI. |
+| `renderEmpty`                    | `(state) => ReactNode` | `No addresses found`    | Custom empty-state row renderer.                                              |
+| `renderError`                    | `(state) => ReactNode` | error message           | Custom error-state row renderer.                                              |
+
+### Events
+
+| Prop              | Type                                 | When it fires                                                                                                                            |
+| ----------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `onValueChange`   | `(value: string) => void`            | Fires when the user types and when a selected suggestion commits a new input value. It does not fire for highlighted-suggestion preview. |
+| `onAddressSelect` | `(address: SelectedAddress) => void` | Fires after the user selects a dropdown suggestion and the provider returns parsed place details.                                        |
+
+There is intentionally no `onLookupSuccess` component prop. Explicit lookup is a provider-level action: call `provider.lookupAddress(query, options?)` from your own button or submit handler and handle the returned promise in your application.
+
+### Provider methods
+
+| Method             | Type                                                         | Description                                                                                                                         |
+| ------------------ | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `getSuggestions`   | `(query, options?) => Promise<readonly AddressSuggestion[]>` | Fetches dropdown suggestions for the typed query. The component calls this after debounce.                                          |
+| `selectSuggestion` | `(suggestion) => Promise<SelectedAddress>`                   | Fetches place details for a selected suggestion and returns the normalized address. The component calls this on dropdown selection. |
+| `lookupAddress`    | `(query, options?) => Promise<SelectedAddress \| null>`      | Optional explicit free-text lookup method. Use it for a “Lookup” / “Verify address” button.                                         |
+| `resetSession`     | `() => void`                                                 | Optional method for resetting provider session state. The Google provider exposes it for session-token control.                     |
+
+### Exported helper functions
+
+| Function                                               | Description                                                                                                           |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `createGooglePlacesAutocompleteProvider(options)`      | Creates the browser-side Google Places provider.                                                                      |
+| `loadGoogleMapsJavaScriptApi(options)`                 | Loads the Google Maps JavaScript API script. Most apps can use the provider factory instead of calling this directly. |
+| `parseGooglePlaceAddress(place)`                       | Converts a Google-like Place object into `SelectedAddress`. Useful for tests or custom providers.                     |
+| `getAddressComponent(components, type, useShortName?)` | Reads one address component by Google component type.                                                                 |
 
 ## Provider request options
 
@@ -382,7 +414,7 @@ If your app already has the package installed from an older `.tgz`, remove the o
 
 ## Demo app
 
-The demo app includes a dark theme, themed dropdown scrollbars, a local Lucide-style MapPin SVG suggestion icon, and a Lucide-style loading spinner in the first autocomplete example. These styles are intentionally demo-owned; the package itself remains headless and does not ship required CSS or icon dependencies.
+The demo app includes a dark theme, themed dropdown scrollbars, local Lucide-style MapPin and MapPinSearch SVG icons, and a Lucide-style loading spinner in the first autocomplete example. It also logs `onValueChange`, `onAddressSelect`, and explicit `lookupAddress()` outcomes to the browser console so you can see the important event flow. These styles and logs are intentionally demo-owned; the package itself remains headless and does not ship required CSS or icon dependencies.
 
 This repository uses pnpm workspaces. Run the demo from the repository root:
 
