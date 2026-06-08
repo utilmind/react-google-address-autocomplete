@@ -7,6 +7,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Create a standalone pnpm workspace.
 - [x] Add root Prettier settings matching the machine shop Next.js project.
 - [x] Add root TypeScript, ESLint, Git ignore, VS Code, and CI config.
+- [x] Remove deprecated demo `baseUrl` usage from `apps/demo/tsconfig.json`.
 - [x] Add the component package workspace.
 - [x] Add the demo app workspace.
 - [x] Add an initial placeholder React component and a smoke unit test.
