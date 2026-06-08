@@ -7,115 +7,167 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Create a standalone pnpm workspace.
 - [x] Add root Prettier settings matching the machine shop Next.js project.
 - [x] Add root TypeScript, ESLint, Git ignore, VS Code, and CI config.
+- [x] Remove deprecated demo `baseUrl` usage from `apps/demo/tsconfig.json`.
 - [x] Add the component package workspace.
 - [x] Add the demo app workspace.
 - [x] Add an initial placeholder React component and a smoke unit test.
-- [ ] Run `pnpm install` and commit the generated `pnpm-lock.yaml`.
-- [ ] Decide final npm package name.
-- [ ] Decide license before npm publication.
+- [x] Run `pnpm install` and commit the generated `pnpm-lock.yaml`.
+- [x] Decide initial npm package name: `react-google-address-autocomplete`.
+- [x] Decide license before npm publication: MIT.
 
 ## 1. Public API design
 
-- [ ] Finalize the component prop names.
-- [ ] Decide whether the package should be mostly headless or include default styles.
-- [ ] Define the normalized selected-address result shape.
-- [ ] Define error states and retry behavior.
-- [ ] Define controlled value behavior for manual typing versus selected place data.
-- [ ] Decide whether `onAddressSelect` should fire only on dropdown selection or also on exact free-text geocode fallback.
-- [ ] Decide which Google request options should be exposed directly.
-- [ ] Decide whether the package should support a server-side proxy provider in addition to browser-side Google Maps JS.
+- [x] Select the initial package direction: headless React component with class names and render props.
+- [x] Select browser-side Google Maps JS key as the initial provider direction.
+- [x] Defer server-side proxy provider until a later version.
+- [x] Select default country behavior: no default country restriction.
+- [x] Define the normalized selected-address result shape.
+- [x] Define the initial provider interface for suggestions and selected place details.
+- [x] Define the first pass of component prop names.
+- [x] Review the public API after the portal dropdown and demo modal are tested in real apps.
+- [ ] Define error states and retry behavior in the rendered component.
+- [x] Define controlled value behavior for manual typing versus selected place data.
+- [x] Decide `onAddressSelect` behavior: fire only on dropdown suggestion selection; never look up free text implicitly on blur.
+- [x] Decide which Google request options should be exposed directly beyond the current first pass.
 
 ## 2. Google Places provider
 
-- [ ] Add a small Google Maps JS loader.
-- [ ] Load the `places` library with `google.maps.importLibrary('places')`.
-- [ ] Implement an Autocomplete Data API provider.
-- [ ] Create and reuse one `AutocompleteSessionToken` per user autocomplete session.
-- [ ] Reset the session token after a place is selected.
-- [ ] Support query debounce.
-- [ ] Protect against out-of-order async responses.
-- [ ] Support country restrictions, language, region, and location bias/restriction.
-- [ ] Add provider-level unit tests with mocked Google globals.
+- [x] Add a small Google Maps JS loader.
+- [x] Load the `places` library with `google.maps.importLibrary('places')`.
+- [x] Implement an Autocomplete Data API provider.
+- [x] Create and reuse one `AutocompleteSessionToken` per user autocomplete session.
+- [x] Reset the session token after a place is selected.
+- [x] Support query debounce in the React component layer.
+- [x] Protect against out-of-order async responses.
+- [x] Support country restrictions, language, region, and location bias/restriction.
+- [x] Add provider-level unit tests with mocked Google globals.
+- [x] Add loader unit tests for existing globals and script injection.
+- [ ] Revisit provider error classes after component-level error rendering is implemented.
+- [x] Add explicit provider-level `lookupAddress()` for button-driven free-text Places lookup.
 
 ## 3. Address parsing
 
-- [ ] Implement `parseGooglePlaceAddress()`.
-- [ ] Map Google address components to `addressLine1`, `addressLine2`, `city`, `state`, `stateCode`, `postalCode`, `country`, and `countryCode`.
-- [ ] Extract latitude and longitude from selected place details.
-- [ ] Add unit tests for US addresses.
-- [ ] Add unit tests for addresses without street number.
-- [ ] Add unit tests for ZIP+4 and missing postal code cases.
-- [ ] Add unit tests for non-US addresses.
+- [x] Implement `parseGooglePlaceAddress()`.
+- [x] Map Google address components to `addressLine1`, `addressLine2`, `city`, `state`, `stateCode`, `postalCode`, `country`, and `countryCode`.
+- [x] Extract latitude and longitude from selected place details.
+- [x] Add unit tests for US addresses.
+- [x] Add unit tests for addresses without street number.
+- [x] Add unit tests for ZIP+4 and missing postal code cases.
+- [x] Add unit tests for non-US addresses.
+- [ ] Add more international address fixtures after the provider returns real Place objects in the demo.
+- [ ] Decide whether the public result should include `postalCodeFull` in addition to `postalCode` and `postalCodeSuffix`.
 
 ## 4. React component behavior
 
-- [ ] Implement suggestion dropdown.
-- [ ] Render dropdown through a portal option for dialogs/modals.
-- [ ] Add keyboard navigation: ArrowUp, ArrowDown, Enter, Escape, Tab.
-- [ ] Add mouse and touch selection.
-- [ ] Add loading, empty, and error states.
-- [ ] Add disabled and read-only states.
-- [ ] Add minimum query length.
-- [ ] Add max suggestions limit.
-- [ ] Add highlighted matched text rendering.
-- [ ] Keep the component accessible with labels, ARIA combobox/listbox semantics, and active descendant behavior.
+- [x] Implement first-pass suggestion dropdown.
+- [x] Render dropdown through a portal option for dialogs/modals.
+- [x] Add first-pass keyboard navigation: ArrowUp, ArrowDown, Enter, Escape, Tab.
+- [x] Add optional highlighted suggestion preview for Twitter Typeahead-style keyboard navigation.
+- [x] Add mouse selection.
+- [ ] Verify touch selection on mobile devices.
+- [x] Add first-pass loading, empty, and error states.
+- [x] Hide loading UI by default and add `showLoading` / `loadingText` customization.
+- [x] Add basic disabled and read-only handling.
+- [x] Add browser-autofill-resistant defaults for custom address search inputs.
+- [x] Switch the default autofill suppression value to `autoComplete="one-time-code"` after Chrome testing.
+- [x] Add deeper disabled and read-only interaction tests.
+- [x] Add minimum query length.
+- [x] Add max suggestions limit.
+- [x] Add basic highlighted matched text rendering.
+- [x] Add first-pass ARIA combobox/listbox semantics and active descendant behavior.
+- [x] Add a first dedicated a11y pass for combobox/listbox IDs, `aria-controls`, `aria-expanded`, and `aria-activedescendant`.
+- [ ] Run a deeper accessibility pass with automated tooling and manual screen-reader checks.
 
 ## 5. Styling
 
-- [ ] Decide default CSS strategy.
-- [ ] Expose class names or slot render props for input, list, item, loading, empty, and error states.
-- [ ] Add a dark-mode-friendly default stylesheet if default styles are included.
-- [ ] Verify dropdown z-index behavior inside dialogs.
-- [ ] Verify narrow/mobile layout.
+- [x] Decide default CSS strategy: no required stylesheet in v0; headless slots first.
+- [x] Expose initial class names and render props for custom UI.
+- [x] Add a small optional example stylesheet in the demo app.
+- [x] Add dark themed demo dropdown scrollbars.
+- [x] Remove reserved scrollbar gutter from the demo dropdown when scrolling is not needed.
+- [x] Add a Lucide-style map-pin icon to demo suggestions.
+- [x] Add a Lucide-style loading spinner to the first demo loading state.
+- [x] Add a Lucide-style map-pin-search icon to the form Lookup button.
+- [x] Add a portal dropdown demo for a clipped modal/dialog shell.
+- [x] Verify dropdown z-index behavior inside real app dialogs.
+- [x] Verify narrow/mobile layout.
 
 ## 6. Demo app
 
-- [ ] Add `.env` support for a browser Google Maps API key.
-- [ ] Add a basic demo page.
-- [ ] Add country restriction examples.
-- [ ] Add a form-fill example that populates address, city, state, ZIP, latitude, and longitude.
-- [ ] Add an example inside a modal/dialog.
-- [ ] Add error-state and empty-state examples.
-- [ ] Add README instructions for enabling Google Places API.
+- [x] Add `.env` support for a browser Google Maps API key.
+- [x] Add a basic demo page.
+- [x] Add country restriction examples.
+- [x] Add a form-fill example that populates address, city, state, ZIP, country, latitude, and longitude.
+- [x] Add a button-driven explicit lookup example for separate address fields; no blur lookup.
+- [x] Polish the demo suggestion dropdown to be closer to the old Typeahead look.
+- [x] Add compact one-line suggestion rendering in the first demo.
+- [x] Add a separate form-fill suggestion style without yellow match backgrounds.
+- [x] Add an example inside a modal/dialog.
+- [x] Add error-state and empty-state examples.
+- [x] Add README instructions for enabling Google Places API.
+- [x] Log demo autocomplete and explicit lookup events to the browser console.
 
 ## 7. Testing
 
 - [x] Add an initial smoke unit test for the placeholder component.
-- [ ] Add parser unit tests.
-- [ ] Add provider tests with mocked Google APIs.
-- [ ] Add component interaction tests with Testing Library.
-- [ ] Add keyboard navigation tests.
-- [ ] Add accessibility checks.
-- [ ] Add demo smoke build in CI.
+- [x] Add parser unit tests.
+- [x] Add provider tests with mocked Google APIs.
+- [x] Add loader tests.
+- [x] Add first component interaction tests with Testing Library.
+- [x] Add first keyboard selection test.
+- [x] Add a test for custom selected input value handling.
+- [x] Fix Testing Library cleanup so component tests do not leak DOM between tests.
+- [x] Add a portal rendering component test.
+- [x] Add first assertions for combobox/listbox ARIA wiring.
+- [x] Exclude archived `jquery-legacy/` files from ESLint.
+- [x] Fix React Hooks lint issues in the demo provider memoization.
+- [x] Move component effect state updates behind async callbacks to satisfy React Hooks lint.
+- [x] Ignore nested generated `dist` outputs and local package artifacts in ESLint.
+- [ ] Add automated accessibility checks.
+- [x] Add demo smoke build in CI.
+- [x] Run `format:check` in the local `build-and-pack.bat` flow so formatting mismatches are caught before GitHub CI.
 
 ## 8. Documentation
 
-- [ ] Document installation.
-- [ ] Document minimal usage.
-- [ ] Document API key and Google Cloud setup.
-- [ ] Document session token behavior.
-- [ ] Document billing-related caveats.
-- [ ] Document Next.js usage.
-- [ ] Document Vite usage.
-- [ ] Document styling customization.
-- [ ] Document address result shape.
-- [ ] Document known limitations.
+- [x] Document installation.
+- [x] Document minimal usage.
+- [x] Document API key and Google Cloud setup.
+- [x] Document session token behavior.
+- [x] Document billing-related caveats.
+- [x] Document Next.js usage.
+- [x] Document Vite usage through the demo app.
+- [x] Document first-pass styling customization through class names and demo CSS.
+- [x] Document address result shape in the package README.
+- [x] Document form-fill usage and custom selected input values.
+- [x] Document highlighted suggestion preview behavior.
+- [x] Document browser autofill behavior and override options.
+- [x] Document component props and provider request options.
+- [x] Split the package README API reference into properties/options, events, and provider methods.
+- [x] Document known limitations.
+- [x] Document explicit free-text lookup behavior and clarify that blur does not trigger lookup.
 
 ## 9. Release and npm publication
 
 - [ ] Confirm package name availability.
-- [ ] Add `CHANGELOG.md`.
+- [x] Add `CHANGELOG.md`.
 - [ ] Add release script.
 - [ ] Add npm provenance if desired.
 - [ ] Publish `0.1.0-alpha.0`.
 - [ ] Test install from npm in the machine shop Next.js project.
 - [ ] Publish `1.0.0` after API stabilization.
 
+## Legacy reference archive
+
+- [x] Keep the old jQuery/Twitter Typeahead implementation under `jquery-legacy/geo-dropdown.js` for historical reference.
+- [x] Exclude `jquery-legacy/` from Prettier so the archived file remains untouched.
+- [x] Link the legacy file from the root README.
+
 ## Open decisions
 
-- Package name: `react-google-address-autocomplete` is used as a temporary name.
-- License: not selected yet.
-- Default implementation direction: custom React UI powered by Google Places Autocomplete Data API.
-- Default country restriction: not selected yet.
-- Styling model: not selected yet.
-- Server proxy support: not selected yet.
+- Browser autofill suppression is best effort. `autoComplete="one-time-code"` currently behaves better than `new-password` in the demo, but keep monitoring Chrome/Safari behavior with real saved profiles.
+
+- z-index and narrow/mobile demo behavior have passed the current visual check, but real app integration should still verify stacking contexts with each modal/dialog library.
+
+- Should `postalCodeFull` be added as a convenience field?
+- Provider exposes explicit `lookupAddress()` for user-triggered Places lookup; component stays selection-only and does not look up free text on blur.
+- Should the component ship an optional default CSS file before `1.0.0`, or should styling remain fully user-owned?

@@ -1,49 +1,56 @@
 # React Google Address Autocomplete
 
-Reusable React + TypeScript address autocomplete component powered by Google Places Autocomplete Data API.
+Standalone React/TypeScript address autocomplete component powered by Google Places Autocomplete Data API.
 
-This repository is intentionally started as a standalone package, so the component can evolve independently from application code and later be published to npm.
+## Repository status
 
-## Goals
+This repository is in early implementation. The current package includes:
 
-- Provide a React-first replacement for old jQuery/Twitter Typeahead address dropdowns.
-- Keep the component reusable across Next.js, Vite, and other React apps.
-- Use the modern Google Places Autocomplete Data API instead of legacy DOM-mutating plugins.
-- Return normalized address data that application forms can use directly.
-- Ship a small package with tests, documentation, and a demo app.
+- pnpm workspace scaffold;
+- Vite demo scaffold;
+- MIT license;
+- headless component API draft;
+- controlled input with a first-pass suggestions dropdown;
+- keyboard navigation for ArrowUp, ArrowDown, Enter, Escape, and Tab;
+- optional Twitter Typeahead-style highlighted suggestion preview in the input;
+- optional dropdown portal rendering for dialogs/modals;
+- form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude, with worldwide or US-only search restrictions depending on the demo field;
+- dark themed demo dropdown styling with Lucide-style map-pin and map-pin-search icons, loading spinner, and themed scrollbars;
+- browser-autofill-resistant defaults for address search inputs;
+- optional loading row rendering, hidden by default;
+- selected-address TypeScript types;
+- tested Google place address parser;
+- browser-side Google Maps JavaScript loader;
+- browser-side Google Places Autocomplete Data API provider with explicit button-driven address lookup, console-logged demo events, local empty/error-state demo providers, and mocked unit tests.
 
-## Current status
+The next major step is hardening edge cases from real app integration: touch-device selection, deeper accessibility checks, and broader international address fixtures.
 
-Initial repository scaffold is ready. The Google integration is planned but not implemented yet.
+## Package documentation
 
-See [TODO.md](./TODO.md) for the living implementation plan.
+The package-level documentation lives in [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md). It includes installation, minimal usage, a split API reference for properties/options, events, and provider methods, Google Cloud setup, billing caveats, Next.js usage, known limitations, demo instructions, selected-address shape, explicit lookup behavior, and local package testing notes.
 
-## Planned package usage
+## Work plan
+
+See [TODO.md](./TODO.md). Keep it updated on every patch.
+
+## Legacy reference
+
+The old jQuery/Twitter Typeahead implementation is kept only as a reference archive at
+[`jquery-legacy/geo-dropdown.js`](./jquery-legacy/geo-dropdown.js). It is intentionally excluded from Prettier formatting so the historical file stays untouched.
+
+## Restricting suggestions
+
+Suggestions are worldwide by default. To restrict a field to the United States, pass `countryCodes` to the component:
 
 ```tsx
-import { AddressAutocompleteInput } from 'react-google-address-autocomplete'
-
-function Example() {
-    const [address, setAddress] = React.useState('')
-
-    return (
-        <AddressAutocompleteInput
-            label="Address"
-            value={address}
-            onValueChange={setAddress}
-            onAddressSelect={(result) => {
-                console.log(result.addressLine1)
-                console.log(result.city)
-                console.log(result.stateCode)
-                console.log(result.postalCode)
-                console.log(result.latitude, result.longitude)
-            }}
-        />
-    )
-}
+<AddressAutocompleteInput countryCodes={['US']} provider={provider} value={address} onValueChange={setAddress} />
 ```
 
+The package README contains the full prop reference, including request options, render props, portal dropdown options, explicit lookup behavior, and loading-state props: [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md).
+
 ## Development
+
+Use pnpm from the repository root. The root `dev` script starts the Vite demo app.
 
 ```bash
 pnpm install
@@ -53,10 +60,26 @@ pnpm typecheck
 pnpm build
 ```
 
-## Repository layout
+On Windows, use the repository-root helper script to run the full verification flow and create a local `.tgz` package in `vendor/npm`:
 
-```txt
-apps/demo/                                  Demo application
-packages/react-google-address-autocomplete/ Published component package
-TODO.md                                     Living project plan
+```bat
+build-and-pack.bat
+```
+
+ESLint is configured to lint source files only. Generated Vite/tsup outputs under nested `dist` directories, local build outputs, coverage, `.vite`, and `vendor` package artifacts are ignored.
+
+## Running the demo app
+
+1. Copy `apps/demo/.env.example` to `apps/demo/.env`.
+2. Set `VITE_GOOGLE_MAPS_API_KEY` to a browser-restricted Google Maps JavaScript API key with Places enabled.
+3. Start the demo from the repository root:
+
+```bash
+pnpm dev
+```
+
+The same app can also be started explicitly with:
+
+```bash
+pnpm --filter address-autocomplete-demo dev
 ```

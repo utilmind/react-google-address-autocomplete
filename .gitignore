@@ -1,8 +1,9 @@
 node_modules/
-dist/
-build/
-coverage/
-.vite/
+**/dist/
+**/build/
+**/coverage/
+**/.vite/
+vendor/npm/*.tgz
 .turbo/
 .DS_Store
 .env

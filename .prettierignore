@@ -1,6 +1,8 @@
 node_modules/
-dist/
-build/
-coverage/
-.vite/
+**/dist/**
+**/build/**
+**/coverage/**
+**/.vite/**
+vendor/
 pnpm-lock.yaml
+jquery-legacy/

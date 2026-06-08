@@ -1,7 +1,6 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "baseUrl": ".",
         "paths": {
             "react-google-address-autocomplete": ["../../packages/react-google-address-autocomplete/src/index.ts"]
         },

@@ -2,9 +2,7 @@ name: CI
 
 on:
     push:
-        branches: [main]
     pull_request:
-        branches: [main]
 
 jobs:
     check:
@@ -39,5 +37,8 @@ jobs:
             - name: Test
               run: pnpm test
 
-            - name: Build
-              run: pnpm build
+            - name: Build package
+              run: pnpm --filter react-google-address-autocomplete build
+
+            - name: Demo smoke build
+              run: pnpm --filter address-autocomplete-demo build
