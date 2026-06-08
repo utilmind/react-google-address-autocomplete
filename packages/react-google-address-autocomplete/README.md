@@ -330,6 +330,12 @@ The provider loads the Google Maps JavaScript API in the browser, imports the `p
 
 Use this flow to build the package into a local `.tgz` file and install it in another project without publishing to npm.
 
+On Windows, the easiest option is to run the repository-root helper script. It runs `pnpm install`, tests, typecheck, build, lint, and then writes a fresh package tarball to `vendor/npm`:
+
+```bat
+build-and-pack.bat
+```
+
 From the repository root in Git Bash, WSL, macOS, or Linux:
 
 ```bash

@@ -60,6 +60,12 @@ pnpm typecheck
 pnpm build
 ```
 
+On Windows, use the repository-root helper script to run the full verification flow and create a local `.tgz` package in `vendor/npm`:
+
+```bat
+build-and-pack.bat
+```
+
 ## Running the demo app
 
 1. Copy `apps/demo/.env.example` to `apps/demo/.env`.
