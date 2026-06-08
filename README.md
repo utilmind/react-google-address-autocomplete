@@ -15,8 +15,9 @@ This repository is in early implementation. The current package includes:
 - optional Twitter Typeahead-style highlighted suggestion preview in the input;
 - optional dropdown portal rendering for dialogs/modals;
 - form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude;
-- dark themed demo dropdown styling with a Lucide-style map-pin icon and themed scrollbars;
+- dark themed demo dropdown styling with a Lucide-style map-pin icon, loading spinner, and themed scrollbars;
 - browser-autofill-resistant defaults for address search inputs;
+- optional loading row rendering, hidden by default;
 - selected-address TypeScript types;
 - tested Google place address parser;
 - browser-side Google Maps JavaScript loader;

@@ -65,8 +65,10 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add mouse selection.
 - [ ] Verify touch selection on mobile devices.
 - [x] Add first-pass loading, empty, and error states.
+- [x] Hide loading UI by default and add `showLoading` / `loadingText` customization.
 - [x] Add basic disabled and read-only handling.
 - [x] Add browser-autofill-resistant defaults for custom address search inputs.
+- [x] Switch the default autofill suppression value to `autoComplete="one-time-code"` after Chrome testing.
 - [ ] Add deeper disabled and read-only interaction tests.
 - [x] Add minimum query length.
 - [x] Add max suggestions limit.
@@ -83,6 +85,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add dark themed demo dropdown scrollbars.
 - [x] Remove reserved scrollbar gutter from the demo dropdown when scrolling is not needed.
 - [x] Add a Lucide-style map-pin icon to demo suggestions.
+- [x] Add a Lucide-style loading spinner to the first demo loading state.
 - [x] Add a portal dropdown demo for a clipped modal/dialog shell.
 - [ ] Verify dropdown z-index behavior inside real app dialogs.
 - [ ] Verify narrow/mobile layout.
@@ -152,7 +155,7 @@ This is the living implementation plan for the component repository. Update it o
 
 ## Open decisions
 
-- Browser autofill suppression is best effort. Keep monitoring Chrome/Safari behavior with real saved profiles.
+- Browser autofill suppression is best effort. `autoComplete="one-time-code"` currently behaves better than `new-password` in the demo, but keep monitoring Chrome/Safari behavior with real saved profiles.
 
 - Should `postalCodeFull` be added as a convenience field?
 - Should the provider expose a free-text geocode fallback, or should the component stay selection-only?

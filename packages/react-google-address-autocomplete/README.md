@@ -4,7 +4,7 @@ Reusable React address autocomplete component powered by Google Places Autocompl
 
 ## Status
 
-Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, can customize the input value after a suggestion is selected, and uses browser-autofill-resistant input defaults. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
+Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, can customize the input value after a suggestion is selected, hides loading UI by default, and uses browser-autofill-resistant input defaults. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
 
 ## Design decisions
 
@@ -117,6 +117,30 @@ const [form, setForm] = useState({
 />
 ```
 
+## Loading state
+
+The component tracks loading internally while suggestions are being fetched, but it does not show a loading row by default. This keeps the dropdown quiet for fast address searches. Enable `showLoading` when your UI should show an interim loading message. Use `loadingText` for simple localization, or `renderLoading` for fully custom markup such as a spinner.
+
+```tsx
+<AddressAutocompleteInput
+    showLoading
+    loadingText="Loading..."
+    provider={provider}
+    value={address}
+    onValueChange={setAddress}
+/>
+```
+
+```tsx
+<AddressAutocompleteInput
+    showLoading
+    renderLoading={() => <span className="loadingRow">Loading addresses...</span>}
+    provider={provider}
+    value={address}
+    onValueChange={setAddress}
+/>
+```
+
 ## Portal dropdowns
 
 By default, the dropdown is rendered inline under the input. For dialogs, modals, and other containers with `overflow: hidden`, enable portal rendering:
@@ -138,7 +162,7 @@ When `dropdownPortal` is enabled, the dropdown is rendered into `document.body` 
 
 ## Browser autofill
 
-Chrome and other browsers can still show saved address/profile autofill UI over custom autocomplete widgets, even when `autocomplete="off"` is present. To reduce that interference, `AddressAutocompleteInput` defaults to `autoComplete="new-password"` and assigns a neutral generated `name` when the consumer does not pass one.
+Chrome and other browsers can still show saved address/profile autofill UI over custom autocomplete widgets, even when `autocomplete="off"` is present. To reduce that interference, `AddressAutocompleteInput` defaults to `autoComplete="one-time-code"` and assigns a neutral generated `name` when the consumer does not pass one.
 
 You can still override both values when your application needs native browser autofill or a stable form field name:
 
@@ -152,7 +176,7 @@ You can still override both values when your application needs native browser au
 />
 ```
 
-For address-search use cases, keep the defaults unless you intentionally want the browser's saved-profile dropdown.
+For address-search use cases, keep the defaults unless you intentionally want the browser's saved-profile dropdown. This remains best-effort suppression because browsers can still use heuristics that ignore application preferences.
 
 ## Google provider
 
@@ -176,7 +200,7 @@ The provider loads the Google Maps JavaScript API in the browser, imports the `p
 
 ## Demo app
 
-The demo app includes a dark theme, themed dropdown scrollbars, and a local Lucide-style MapPin SVG suggestion icon. These styles are intentionally demo-owned; the package itself remains headless and does not ship required CSS or icon dependencies.
+The demo app includes a dark theme, themed dropdown scrollbars, a local Lucide-style MapPin SVG suggestion icon, and a Lucide-style loading spinner in the first autocomplete example. These styles are intentionally demo-owned; the package itself remains headless and does not ship required CSS or icon dependencies.
 
 This repository uses pnpm workspaces. Run the demo from the repository root:
 

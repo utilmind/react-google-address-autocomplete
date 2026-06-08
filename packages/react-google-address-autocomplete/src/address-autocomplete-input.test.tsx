@@ -49,6 +49,9 @@ function StatefulAddressInput({
     getSelectedAddressInputValue,
     previewHighlightedSuggestion,
     getHighlightedSuggestionInputValue,
+    showLoading,
+    loadingText,
+    renderLoading,
 }: {
     dropdownPortal?: boolean
     provider?: AddressAutocompleteProvider
@@ -56,6 +59,9 @@ function StatefulAddressInput({
     getSelectedAddressInputValue?: (address: SelectedAddress, suggestion: AddressSuggestion) => string
     previewHighlightedSuggestion?: boolean
     getHighlightedSuggestionInputValue?: (suggestion: AddressSuggestion) => string
+    showLoading?: boolean
+    loadingText?: string
+    renderLoading?: () => string
 }) {
     const [value, setValue] = useState('')
 
@@ -68,6 +74,9 @@ function StatefulAddressInput({
             getSelectedAddressInputValue={getSelectedAddressInputValue}
             previewHighlightedSuggestion={previewHighlightedSuggestion}
             getHighlightedSuggestionInputValue={getHighlightedSuggestionInputValue}
+            showLoading={showLoading}
+            loadingText={loadingText}
+            renderLoading={renderLoading}
             provider={provider}
             value={value}
             onAddressSelect={onAddressSelect}
@@ -114,8 +123,37 @@ describe('AddressAutocompleteInput', () => {
 
         const input = screen.getByLabelText('Address') as HTMLInputElement
 
-        expect(input.getAttribute('autocomplete')).toBe('new-password')
+        expect(input.getAttribute('autocomplete')).toBe('one-time-code')
         expect(input.name).toMatch(/^rgac-address-search-/)
+    })
+
+    it('hides the loading message by default while suggestions are loading', async () => {
+        const user = userEvent.setup()
+        const provider: AddressAutocompleteProvider = {
+            getSuggestions: vi.fn(() => new Promise<readonly AddressSuggestion[]>(() => undefined)),
+            selectSuggestion: vi.fn(async () => mockSelectedAddress),
+        }
+
+        render(<StatefulAddressInput provider={provider} />)
+
+        await user.type(screen.getByLabelText('Address'), '13133')
+
+        expect(screen.queryByText('Loading…')).toBeNull()
+        expect(screen.queryByRole('listbox')).toBeNull()
+    })
+
+    it('can show a custom loading message while suggestions are loading', async () => {
+        const user = userEvent.setup()
+        const provider: AddressAutocompleteProvider = {
+            getSuggestions: vi.fn(() => new Promise<readonly AddressSuggestion[]>(() => undefined)),
+            selectSuggestion: vi.fn(async () => mockSelectedAddress),
+        }
+
+        render(<StatefulAddressInput loadingText="Please wait" showLoading provider={provider} />)
+
+        await user.type(screen.getByLabelText('Address'), '13133')
+
+        expect(await screen.findByText('Please wait')).toBeTruthy()
     })
 
     it('fetches and renders suggestions while typing', async () => {

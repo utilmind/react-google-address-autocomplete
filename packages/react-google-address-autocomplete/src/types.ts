@@ -102,6 +102,8 @@ export interface AddressAutocompleteInputProps extends Omit<
     locationRestriction?: unknown
     origin?: { lat: number; lng: number }
     renderSuggestion?: (props: AddressAutocompleteRenderSuggestionProps) => ReactNode
+    showLoading?: boolean
+    loadingText?: ReactNode
     renderLoading?: (state: AddressAutocompleteSlotState) => ReactNode
     renderEmpty?: (state: AddressAutocompleteSlotState) => ReactNode
     renderError?: (state: AddressAutocompleteSlotState) => ReactNode

@@ -15,7 +15,7 @@ const defaultDebounceMs = 250
 const defaultMaxSuggestions = 5
 const defaultMinQueryLength = 1
 const defaultDropdownPortalOffset = 6
-const defaultAutoComplete = 'new-password'
+const defaultAutoComplete = 'one-time-code'
 const defaultInputNamePrefix = 'rgac-address-search'
 
 interface DropdownPosition {
@@ -53,6 +53,8 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         previewHighlightedSuggestion = false,
         getHighlightedSuggestionInputValue,
         renderSuggestion,
+        showLoading = false,
+        loadingText = 'Loading…',
         renderLoading,
         renderEmpty,
         renderError,
@@ -108,13 +110,13 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
     const slotState = useMemo<AddressAutocompleteSlotState>(
         () => ({
             status,
-            isOpen: isDropdownOpen && status !== 'idle',
+            isOpen: isDropdownOpen && shouldShowDropdownForStatus(status, showLoading),
             isLoading: status === 'loading',
             highlightedIndex,
             suggestions,
             error,
         }),
-        [error, highlightedIndex, isDropdownOpen, status, suggestions],
+        [error, highlightedIndex, isDropdownOpen, showLoading, status, suggestions],
     )
 
     const shouldRenderDropdown = slotState.isOpen
@@ -375,8 +377,10 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
             query={value}
             renderEmpty={renderEmpty}
             renderError={renderError}
+            loadingText={loadingText}
             renderLoading={renderLoading}
             renderSuggestion={renderSuggestion}
+            showLoading={showLoading}
             selectSuggestion={selectSuggestion}
             setHighlightedIndex={(index) => highlightSuggestionByIndex(index, false)}
             slotState={slotState}
@@ -427,12 +431,14 @@ interface AddressAutocompleteDropdownProps {
     highlightedSuggestionClassName: string | undefined
     listboxId: string
     query: string
+    loadingText: ReactNode
     renderEmpty: ((state: AddressAutocompleteSlotState) => ReactNode) | undefined
     renderError: ((state: AddressAutocompleteSlotState) => ReactNode) | undefined
     renderLoading: ((state: AddressAutocompleteSlotState) => ReactNode) | undefined
     renderSuggestion: AddressAutocompleteInputProps['renderSuggestion']
     selectSuggestion: (suggestion: AddressSuggestion) => Promise<void>
     setHighlightedIndex: (index: number) => void
+    showLoading: boolean
     slotState: AddressAutocompleteSlotState
     status: AddressAutocompleteStatus
     statusMessageClassName: string | undefined
@@ -448,12 +454,14 @@ function AddressAutocompleteDropdown({
     highlightedSuggestionClassName,
     listboxId,
     query,
+    loadingText,
     renderEmpty,
     renderError,
     renderLoading,
     renderSuggestion,
     selectSuggestion,
     setHighlightedIndex,
+    showLoading,
     slotState,
     status,
     statusMessageClassName,
@@ -463,8 +471,8 @@ function AddressAutocompleteDropdown({
 }: AddressAutocompleteDropdownProps) {
     return (
         <div id={listboxId} className={dropdownClassName} role="listbox" style={style}>
-            {status === 'loading'
-                ? renderStatusMessage(renderLoading, slotState, statusMessageClassName, 'Loading…')
+            {status === 'loading' && showLoading
+                ? renderStatusMessage(renderLoading, slotState, statusMessageClassName, loadingText)
                 : null}
             {status === 'empty'
                 ? renderStatusMessage(renderEmpty, slotState, statusMessageClassName, 'No addresses found')
@@ -528,7 +536,7 @@ function renderStatusMessage(
     render: ((state: AddressAutocompleteSlotState) => ReactNode) | undefined,
     state: AddressAutocompleteSlotState,
     className: string | undefined,
-    fallback: string,
+    fallback: ReactNode,
 ) {
     return (
         <div className={className} role="status">
@@ -599,6 +607,10 @@ function renderMatchedText(text: string, matches: readonly AddressTextMatch[]) {
     }
 
     return fragments
+}
+
+function shouldShowDropdownForStatus(status: AddressAutocompleteStatus, showLoading: boolean): boolean {
+    return status === 'open' || status === 'empty' || status === 'error' || (status === 'loading' && showLoading)
 }
 
 function getNextHighlightedIndex(currentIndex: number, suggestionCount: number): number {

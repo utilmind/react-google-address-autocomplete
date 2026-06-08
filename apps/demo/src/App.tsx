@@ -69,9 +69,11 @@ export default function App() {
                         label="Address"
                         placeholder="Start typing an address"
                         previewHighlightedSuggestion
+                        showLoading
                         provider={inlineProvider}
                         statusMessageClassName="statusMessage"
                         suggestionClassName="suggestion"
+                        renderLoading={renderInlineLoading}
                         value={address}
                         renderSuggestion={renderSingleLineAddressSuggestion}
                         onAddressSelect={setSelectedAddress}
@@ -243,6 +245,15 @@ export default function App() {
     )
 }
 
+function renderInlineLoading() {
+    return (
+        <span className="loadingStatus">
+            <DemoSpinnerIcon className="loadingSpinner" />
+            Loading...
+        </span>
+    )
+}
+
 function renderSingleLineAddressSuggestion({ suggestion }: AddressAutocompleteRenderSuggestionProps) {
     return (
         <div className="singleLineSuggestion">
@@ -270,6 +281,25 @@ function renderAddressSuggestion({ suggestion }: AddressAutocompleteRenderSugges
                 {suggestion.secondaryText ? <small>{suggestion.secondaryText}</small> : null}
             </div>
         </div>
+    )
+}
+
+function DemoSpinnerIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            aria-hidden="true"
+            className={className}
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            width="16"
+        >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
     )
 }
 

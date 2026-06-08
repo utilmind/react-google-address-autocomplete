@@ -78,7 +78,11 @@ The component does not implement a focus trap. Dialog libraries should continue 
 
 The component is an address search box, not a personal-profile form field. Native browser address autofill can overlap the custom Places dropdown and select personal saved addresses that are unrelated to the data being edited.
 
-`autocomplete="off"` is not reliable enough for this use case because browsers may still offer saved-profile suggestions based on labels, names, and heuristics. The component therefore defaults the input to `autoComplete="new-password"` and provides a neutral generated `name` when the consumer does not pass one. This is a practical suppression strategy, not a browser-level guarantee. Consumers can still pass `autoComplete` and `name` explicitly when they want native autofill.
+`autocomplete="off"` is not reliable enough for this use case because browsers may still offer saved-profile suggestions based on labels, names, and heuristics. The component therefore defaults the input to `autoComplete="one-time-code"` and provides a neutral generated `name` when the consumer does not pass one. This is a practical suppression strategy, not a browser-level guarantee. Consumers can still pass `autoComplete` and `name` explicitly when they want native autofill.
+
+## Loading UI policy
+
+The component enters a `loading` status while it waits for suggestions or selected-place details. Loading UI is hidden by default because address autocomplete responses are usually fast and loading rows can cause avoidable dropdown flicker. Consumers can opt into visible loading UI with `showLoading`, localize the fallback with `loadingText`, or fully replace it with `renderLoading`.
 
 ## Controlled value policy
 
