@@ -66,6 +66,8 @@ On Windows, use the repository-root helper script to run the full verification f
 build-and-pack.bat
 ```
 
+ESLint is configured to lint source files only. Generated Vite/tsup outputs under nested `dist` directories, local build outputs, coverage, `.vite`, and `vendor` package artifacts are ignored.
+
 ## Running the demo app
 
 1. Copy `apps/demo/.env.example` to `apps/demo/.env`.

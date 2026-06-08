@@ -120,6 +120,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Exclude archived `jquery-legacy/` files from ESLint.
 - [x] Fix React Hooks lint issues in the demo provider memoization.
 - [x] Move component effect state updates behind async callbacks to satisfy React Hooks lint.
+- [x] Ignore nested generated `dist` outputs and local package artifacts in ESLint.
 - [ ] Add automated accessibility checks.
 - [ ] Add demo smoke build in CI.
 
