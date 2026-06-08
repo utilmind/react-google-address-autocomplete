@@ -35,9 +35,9 @@ export default function App() {
     const [selectedModalAddress, setSelectedModalAddress] = useState<SelectedAddress | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
 
-    const inlineProvider = useMemo(createDemoProvider, [])
-    const formProvider = useMemo(createDemoProvider, [])
-    const modalProvider = useMemo(createDemoProvider, [])
+    const inlineProvider = useMemo(() => createDemoProvider(), [])
+    const formProvider = useMemo(() => createDemoProvider(), [])
+    const modalProvider = useMemo(() => createDemoProvider(), [])
 
     return (
         <main className="page-shell">

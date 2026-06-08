@@ -132,6 +132,18 @@ const selectedAddress = await provider.selectSuggestion(suggestions[0])
 
 The provider loads the Google Maps JavaScript API in the browser, imports the `places` library, calls `AutocompleteSuggestion.fetchAutocompleteSuggestions()`, and fetches selected place details through the original `PlacePrediction`. It creates one Google `AutocompleteSessionToken` per autocomplete session and resets that token after a successful selection.
 
+## Demo app
+
+This repository uses pnpm workspaces. Run the demo from the repository root:
+
+```bash
+pnpm install
+cp apps/demo/.env.example apps/demo/.env
+pnpm dev
+```
+
+Then add `VITE_GOOGLE_MAPS_API_KEY` to `apps/demo/.env`. The key should be a browser-restricted Google Maps JavaScript API key with Places enabled. To target the demo directly, use `pnpm --filter address-autocomplete-demo dev`.
+
 ## Selected address shape
 
 ```ts

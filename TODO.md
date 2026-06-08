@@ -23,7 +23,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Define the normalized selected-address result shape.
 - [x] Define the initial provider interface for suggestions and selected place details.
 - [x] Define the first pass of component prop names.
-- [ ] Review the public API after the portal dropdown and demo modal are tested in real apps.
+- [x] Review the public API after the portal dropdown and demo modal are tested in real apps.
 - [ ] Define error states and retry behavior in the rendered component.
 - [x] Define controlled value behavior for manual typing versus selected place data.
 - [ ] Decide whether `onAddressSelect` should fire only on dropdown selection or also on exact free-text geocode fallback.
@@ -89,7 +89,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add a form-fill example that populates address, city, state, ZIP, latitude, and longitude.
 - [x] Add an example inside a modal/dialog.
 - [ ] Add error-state and empty-state examples.
-- [ ] Add README instructions for enabling Google Places API.
+- [x] Add README instructions for enabling Google Places API.
 
 ## 7. Testing
 
@@ -103,6 +103,9 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Fix Testing Library cleanup so component tests do not leak DOM between tests.
 - [x] Add a portal rendering component test.
 - [x] Add first assertions for combobox/listbox ARIA wiring.
+- [x] Exclude archived `jquery-legacy/` files from ESLint.
+- [x] Fix React Hooks lint issues in the demo provider memoization.
+- [x] Move component effect state updates behind async callbacks to satisfy React Hooks lint.
 - [ ] Add automated accessibility checks.
 - [ ] Add demo smoke build in CI.
 
@@ -110,7 +113,7 @@ This is the living implementation plan for the component repository. Update it o
 
 - [x] Document installation.
 - [x] Document minimal usage.
-- [ ] Document API key and Google Cloud setup.
+- [x] Document API key and Google Cloud setup.
 - [x] Document session token behavior.
 - [ ] Document billing-related caveats.
 - [ ] Document Next.js usage.

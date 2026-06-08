@@ -132,44 +132,48 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
 
     useEffect(() => {
         if (!shouldRenderDropdownPortal) {
-            setDropdownPosition(null)
             return
         }
 
-        updateDropdownPosition()
+        const animationFrameId = window.requestAnimationFrame(updateDropdownPosition)
+
         window.addEventListener('resize', updateDropdownPosition)
         window.addEventListener('scroll', updateDropdownPosition, true)
 
         return () => {
+            window.cancelAnimationFrame(animationFrameId)
             window.removeEventListener('resize', updateDropdownPosition)
             window.removeEventListener('scroll', updateDropdownPosition, true)
         }
     }, [shouldRenderDropdownPortal, updateDropdownPosition])
 
     useEffect(() => {
-        if (!provider || !isInteractive || !isDropdownOpen) {
-            setStatus('idle')
-            setSuggestions([])
-            setHighlightedIndex(-1)
-            setError(null)
-            return
-        }
-
-        if (trimmedValue.length < normalizedMinQueryLength) {
+        if (!provider || !isInteractive || !isDropdownOpen || trimmedValue.length < normalizedMinQueryLength) {
             latestRequestIdRef.current += 1
-            setStatus('idle')
-            setSuggestions([])
-            setHighlightedIndex(-1)
-            setError(null)
-            return
+
+            const resetTimerId = window.setTimeout(() => {
+                setStatus('idle')
+                setSuggestions([])
+                setHighlightedIndex(-1)
+                setError(null)
+            }, 0)
+
+            return () => {
+                window.clearTimeout(resetTimerId)
+            }
         }
 
         const requestId = latestRequestIdRef.current + 1
         latestRequestIdRef.current = requestId
-        setStatus('loading')
-        setError(null)
 
         const timerId = window.setTimeout(() => {
+            if (requestId !== latestRequestIdRef.current) {
+                return
+            }
+
+            setStatus('loading')
+            setError(null)
+
             void provider
                 .getSuggestions(trimmedValue, requestOptions)
                 .then((nextSuggestions) => {
@@ -305,10 +309,23 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
     }
 
     const handleInputChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-        onValueChange(event.currentTarget.value)
+        const nextValue = event.currentTarget.value
+        const nextTrimmedValue = nextValue.trim()
+
+        onValueChange(nextValue)
 
         if (isInteractive) {
             setIsDropdownOpen(true)
+
+            if (provider && nextTrimmedValue.length >= normalizedMinQueryLength) {
+                setStatus('loading')
+                setError(null)
+            } else {
+                setStatus('idle')
+                setSuggestions([])
+                setHighlightedIndex(-1)
+                setError(null)
+            }
         }
     }
 

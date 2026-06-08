@@ -32,10 +32,28 @@ The old jQuery/Twitter Typeahead implementation is kept only as a reference arch
 
 ## Development
 
+Use pnpm from the repository root. The root `dev` script starts the Vite demo app.
+
 ```bash
 pnpm install
 pnpm dev
 pnpm test
 pnpm typecheck
 pnpm build
+```
+
+## Running the demo app
+
+1. Copy `apps/demo/.env.example` to `apps/demo/.env`.
+2. Set `VITE_GOOGLE_MAPS_API_KEY` to a browser-restricted Google Maps JavaScript API key with Places enabled.
+3. Start the demo from the repository root:
+
+```bash
+pnpm dev
+```
+
+The same app can also be started explicitly with:
+
+```bash
+pnpm --filter address-autocomplete-demo dev
 ```
