@@ -125,6 +125,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Ignore nested generated `dist` outputs and local package artifacts in ESLint.
 - [ ] Add automated accessibility checks.
 - [x] Add demo smoke build in CI.
+- [x] Run `format:check` in the local `build-and-pack.bat` flow so formatting mismatches are caught before GitHub CI.
 
 ## 8. Documentation
 

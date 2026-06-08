@@ -311,5 +311,4 @@ describe('createGooglePlacesAutocompleteProvider', () => {
 
         expect(fetchAutocompleteSuggestions).toHaveBeenCalledTimes(1)
     })
-
 })
