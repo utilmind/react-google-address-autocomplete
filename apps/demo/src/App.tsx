@@ -54,6 +54,7 @@ export default function App() {
                         Type an address to fetch Google Places suggestions. Add a browser-restricted Google Maps
                         JavaScript API key to <code>apps/demo/.env</code> to enable live suggestions.
                     </p>
+                    <p className="summary">One-line, with “Loading” spinner, worldwide.</p>
 
                     {!inlineProvider ? (
                         <p className="notice">
@@ -98,6 +99,8 @@ export default function App() {
                         street address only, while city, state, ZIP, country, latitude, and longitude are copied from
                         the selected Google Place result.
                     </p>
+
+                    <p className="summary">Two lines, no “Loading”, US only.</p>
 
                     <div className="form-grid">
                         <AddressAutocompleteInput
