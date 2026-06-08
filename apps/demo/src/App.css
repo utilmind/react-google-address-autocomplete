@@ -137,7 +137,7 @@ h2 {
     background: #101010;
 }
 
-.dropdown::-webkit-scrollbar-thumb {
+.dropdown:-webkit-scrollbar-thumb {
     border: 2px solid #101010;
     border-radius: 999px;
     background: #525252;
@@ -194,7 +194,7 @@ h2 {
 
 .suggestionMainText {
     overflow-wrap: anywhere;
-    font-weight: 700;
+    font-weight: bold;
 }
 
 .singleLineSuggestion .suggestionMainText {
@@ -232,15 +232,16 @@ h2 {
     padding: 10px 14px;
 }
 
-.formDropdown .formSuggestion {
-    font-weight: 600;
+.formDropdown .suggestionMainText {
+    font-weight: 500;
+    opacity: 0.9;
 }
 
 .formDropdown .formSuggestion mark {
     border-radius: 0;
     background: transparent;
     color: inherit;
-    font-weight: 800;
+    font-weight: 800; /* extra bold*/
     padding: 0;
 }
 
