@@ -54,6 +54,28 @@ export function AddressField() {
 }
 ```
 
+## Highlighted suggestion preview
+
+By default, arrow-key navigation only changes the highlighted dropdown item. The typed query stays in the input until the user selects a suggestion. To mimic Twitter Typeahead-style behavior where the highlighted item is previewed inside the input during keyboard navigation, enable `previewHighlightedSuggestion`.
+
+```tsx
+<AddressAutocompleteInput previewHighlightedSuggestion provider={provider} value={address} onValueChange={setAddress} />
+```
+
+Use `getHighlightedSuggestionInputValue` to control the preview text. This is useful when a form should preview only the street line while the dropdown still shows the full address.
+
+```tsx
+<AddressAutocompleteInput
+    previewHighlightedSuggestion
+    getHighlightedSuggestionInputValue={(suggestion) => suggestion.mainText || suggestion.fullText}
+    provider={provider}
+    value={address}
+    onValueChange={setAddress}
+/>
+```
+
+The preview is visual component state. It does not call `onValueChange` until the user edits the input or selects a suggestion.
+
 ## Filling separate form fields
 
 Use `onAddressSelect` to copy structured place data into the rest of your form. By default, the input value becomes the selected place's formatted address. Use `getSelectedAddressInputValue` when your form should keep a different value in the autocomplete field, such as street address only.

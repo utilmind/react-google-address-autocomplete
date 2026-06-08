@@ -61,6 +61,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Implement first-pass suggestion dropdown.
 - [x] Render dropdown through a portal option for dialogs/modals.
 - [x] Add first-pass keyboard navigation: ArrowUp, ArrowDown, Enter, Escape, Tab.
+- [x] Add optional highlighted suggestion preview for Twitter Typeahead-style keyboard navigation.
 - [x] Add mouse selection.
 - [ ] Verify touch selection on mobile devices.
 - [x] Add first-pass loading, empty, and error states.
@@ -126,6 +127,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document first-pass styling customization through class names and demo CSS.
 - [x] Document address result shape in the package README.
 - [x] Document form-fill usage and custom selected input values.
+- [x] Document highlighted suggestion preview behavior.
 - [x] Document browser autofill behavior and override options.
 - [ ] Document known limitations.
 
