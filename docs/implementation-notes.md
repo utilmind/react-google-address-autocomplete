@@ -55,7 +55,8 @@ The component owns UI lifecycle concerns:
 - keep request IDs so stale component-level responses cannot reopen old results;
 - render loading, empty, and error slots;
 - close the dropdown and reset the provider session on blur, Escape, and Tab;
-- call `provider.selectSuggestion()` only when the user chooses a suggestion.
+- call `provider.selectSuggestion()` only when the user chooses a suggestion;
+- call `getSelectedAddressInputValue()` when provided so apps can choose what text remains in the input after selection.
 
 The component remains headless. It ships no required stylesheet. Consumers can use class names for simple styling or render props for fully custom suggestion/status markup.
 
@@ -72,6 +73,15 @@ When portal rendering is enabled, the component:
 - keeps the same listbox ID so `aria-controls` and `aria-activedescendant` continue to work across the portal boundary.
 
 The component does not implement a focus trap. Dialog libraries should continue to own focus trapping and modal semantics.
+
+## Controlled value policy
+
+The component never owns the input text permanently. User typing is emitted through `onValueChange()`, and selected place details are emitted through `onAddressSelect()`. After a suggestion is selected, the component calls `onValueChange()` with either:
+
+1. the value returned by `getSelectedAddressInputValue(selectedAddress, suggestion)`, when provided; or
+2. `selectedAddress.formattedAddress || suggestion.fullText` by default.
+
+This lets a form keep the full formatted address in the input, or keep only `addressLine1` while filling city, state, postal code, and coordinates into separate fields.
 
 ## Parser policy
 

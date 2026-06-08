@@ -25,7 +25,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Define the first pass of component prop names.
 - [ ] Review the public API after the portal dropdown and demo modal are tested in real apps.
 - [ ] Define error states and retry behavior in the rendered component.
-- [ ] Define controlled value behavior for manual typing versus selected place data.
+- [x] Define controlled value behavior for manual typing versus selected place data.
 - [ ] Decide whether `onAddressSelect` should fire only on dropdown selection or also on exact free-text geocode fallback.
 - [ ] Decide which Google request options should be exposed directly beyond the current first pass.
 
@@ -86,7 +86,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add `.env` support for a browser Google Maps API key.
 - [x] Add a basic demo page.
 - [ ] Add country restriction examples.
-- [ ] Add a form-fill example that populates address, city, state, ZIP, latitude, and longitude.
+- [x] Add a form-fill example that populates address, city, state, ZIP, latitude, and longitude.
 - [x] Add an example inside a modal/dialog.
 - [ ] Add error-state and empty-state examples.
 - [ ] Add README instructions for enabling Google Places API.
@@ -99,6 +99,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add loader tests.
 - [x] Add first component interaction tests with Testing Library.
 - [x] Add first keyboard selection test.
+- [x] Add a test for custom selected input value handling.
 - [x] Fix Testing Library cleanup so component tests do not leak DOM between tests.
 - [x] Add a portal rendering component test.
 - [x] Add first assertions for combobox/listbox ARIA wiring.
@@ -116,6 +117,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document Vite usage through the demo app.
 - [x] Document first-pass styling customization through class names and demo CSS.
 - [x] Document address result shape in the package README.
+- [x] Document form-fill usage and custom selected input values.
 - [ ] Document known limitations.
 
 ## 9. Release and npm publication

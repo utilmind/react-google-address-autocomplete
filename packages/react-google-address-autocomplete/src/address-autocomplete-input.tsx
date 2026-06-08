@@ -47,6 +47,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         locationRestriction,
         origin,
         onAddressSelect,
+        getSelectedAddressInputValue,
         renderSuggestion,
         renderLoading,
         renderEmpty,
@@ -229,7 +230,11 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
 
             try {
                 const selectedAddress = await provider.selectSuggestion(suggestion)
-                onValueChange(selectedAddress.formattedAddress || suggestion.fullText)
+                const nextInputValue = getSelectedAddressInputValue
+                    ? getSelectedAddressInputValue(selectedAddress, suggestion)
+                    : selectedAddress.formattedAddress || suggestion.fullText
+
+                onValueChange(nextInputValue)
                 onAddressSelect?.(selectedAddress)
                 setIsDropdownOpen(false)
                 setStatus('idle')
@@ -241,7 +246,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                 setIsDropdownOpen(true)
             }
         },
-        [disabled, onAddressSelect, onValueChange, provider, readOnly],
+        [disabled, getSelectedAddressInputValue, onAddressSelect, onValueChange, provider, readOnly],
     )
 
     const handleInputFocus: FocusEventHandler<HTMLInputElement> = (event) => {

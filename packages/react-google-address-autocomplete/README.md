@@ -4,7 +4,7 @@ Reusable React address autocomplete component powered by Google Places Autocompl
 
 ## Status
 
-Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, and can render the dropdown through a portal for dialogs/modals. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
+Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, and can customize the input value after a suggestion is selected. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
 
 ## Design decisions
 
@@ -52,6 +52,45 @@ export function AddressField() {
         />
     )
 }
+```
+
+## Filling separate form fields
+
+Use `onAddressSelect` to copy structured place data into the rest of your form. By default, the input value becomes the selected place's formatted address. Use `getSelectedAddressInputValue` when your form should keep a different value in the autocomplete field, such as street address only.
+
+```tsx
+const [form, setForm] = useState({
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    latitude: '',
+    longitude: '',
+})
+
+<AddressAutocompleteInput
+    getSelectedAddressInputValue={(selectedAddress) =>
+        selectedAddress.addressLine1 || selectedAddress.formattedAddress
+    }
+    label="Address"
+    provider={provider}
+    value={form.address}
+    onAddressSelect={(selectedAddress) => {
+        setForm({
+            address: selectedAddress.addressLine1,
+            city: selectedAddress.city,
+            state: selectedAddress.stateCode || selectedAddress.state,
+            zip: selectedAddress.postalCodeSuffix
+                ? `${selectedAddress.postalCode}-${selectedAddress.postalCodeSuffix}`
+                : selectedAddress.postalCode,
+            latitude: selectedAddress.latitude?.toString() ?? '',
+            longitude: selectedAddress.longitude?.toString() ?? '',
+        })
+    }}
+    onValueChange={(address) => {
+        setForm((current) => ({ ...current, address }))
+    }}
+/>
 ```
 
 ## Portal dropdowns

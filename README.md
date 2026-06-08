@@ -13,6 +13,7 @@ This repository is in early implementation. The current package includes:
 - controlled input with a first-pass suggestions dropdown;
 - keyboard navigation for ArrowUp, ArrowDown, Enter, Escape, and Tab;
 - optional dropdown portal rendering for dialogs/modals;
+- form-fill demo that maps a selected place to address, city, state, ZIP, latitude, and longitude;
 - selected-address TypeScript types;
 - tested Google place address parser;
 - browser-side Google Maps JavaScript loader;

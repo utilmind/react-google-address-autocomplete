@@ -36,10 +36,12 @@ function StatefulAddressInput({
     dropdownPortal,
     provider,
     onAddressSelect,
+    getSelectedAddressInputValue,
 }: {
     dropdownPortal?: boolean
     provider?: AddressAutocompleteProvider
     onAddressSelect?: (address: SelectedAddress) => void
+    getSelectedAddressInputValue?: (address: SelectedAddress, suggestion: AddressSuggestion) => string
 }) {
     const [value, setValue] = useState('')
 
@@ -49,6 +51,7 @@ function StatefulAddressInput({
             dropdownPortal={dropdownPortal}
             label="Address"
             placeholder="Start typing"
+            getSelectedAddressInputValue={getSelectedAddressInputValue}
             provider={provider}
             value={value}
             onAddressSelect={onAddressSelect}
@@ -114,6 +117,26 @@ describe('AddressAutocompleteInput', () => {
         })
         expect(provider.selectSuggestion).toHaveBeenCalledWith(mockSuggestion)
         expect(handleAddressSelect).toHaveBeenCalledWith(mockSelectedAddress)
+    })
+
+    it('allows selected address to define the next input value', async () => {
+        const user = userEvent.setup()
+        const provider = createMockProvider()
+
+        render(
+            <StatefulAddressInput
+                getSelectedAddressInputValue={(selectedAddress) => selectedAddress.addressLine1}
+                provider={provider}
+            />,
+        )
+
+        const input = screen.getByLabelText('Address') as HTMLInputElement
+        await user.type(input, '13133')
+        await user.click(await screen.findByRole('option', { name: /13133 34th Street North/i }))
+
+        await waitFor(() => {
+            expect(input.value).toBe('13133 34th Street North')
+        })
     })
 
     it('selects the highlighted suggestion with Enter', async () => {
