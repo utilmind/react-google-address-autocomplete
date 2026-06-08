@@ -68,6 +68,7 @@ export default function App() {
                         inputClassName="input"
                         label="Address"
                         placeholder="Start typing an address"
+                        previewHighlightedSuggestion
                         provider={inlineProvider}
                         statusMessageClassName="statusMessage"
                         suggestionClassName="suggestion"
@@ -104,9 +105,13 @@ export default function App() {
                                 selected.addressLine1 || selected.formattedAddress
                             }
                             highlightedSuggestionClassName="suggestionHighlighted"
+                            getHighlightedSuggestionInputValue={(suggestion) =>
+                                suggestion.mainText || suggestion.fullText
+                            }
                             inputClassName="input"
                             label="Address"
                             placeholder="Start typing a street address"
+                            previewHighlightedSuggestion
                             provider={formProvider}
                             statusMessageClassName="statusMessage"
                             suggestionClassName="suggestion"
@@ -213,6 +218,7 @@ export default function App() {
                             inputClassName="input"
                             label="Modal address"
                             placeholder="Start typing an address"
+                            previewHighlightedSuggestion
                             provider={modalProvider}
                             statusMessageClassName="statusMessage"
                             suggestionClassName="suggestion"
