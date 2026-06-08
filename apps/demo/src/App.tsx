@@ -353,7 +353,7 @@ function FormTextInput({
         <label className="field form-field">
             <span>{label}</span>
             <input
-                autoComplete="new-password"
+                autoComplete="one-time-code"
                 className="input"
                 name={`rgac-demo-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                 value={value}
