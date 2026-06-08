@@ -85,6 +85,15 @@ describe('AddressAutocompleteInput', () => {
         expect(input.value).toBe('13133 34th Street North')
     })
 
+    it('uses browser-autofill-resistant defaults for autocomplete inputs', () => {
+        render(<StatefulAddressInput />)
+
+        const input = screen.getByLabelText('Address') as HTMLInputElement
+
+        expect(input.getAttribute('autocomplete')).toBe('new-password')
+        expect(input.name).toMatch(/^rgac-address-search-/)
+    })
+
     it('fetches and renders suggestions while typing', async () => {
         const user = userEvent.setup()
         const provider = createMockProvider()

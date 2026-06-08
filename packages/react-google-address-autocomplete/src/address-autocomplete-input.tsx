@@ -15,6 +15,8 @@ const defaultDebounceMs = 250
 const defaultMaxSuggestions = 5
 const defaultMinQueryLength = 1
 const defaultDropdownPortalOffset = 6
+const defaultAutoComplete = 'new-password'
+const defaultInputNamePrefix = 'rgac-address-search'
 
 interface DropdownPosition {
     left: number
@@ -367,9 +369,10 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                 aria-controls={shouldRenderDropdown ? listboxId : undefined}
                 aria-expanded={shouldRenderDropdown}
                 aria-haspopup="listbox"
-                autoComplete={autoComplete ?? 'off'}
+                autoComplete={autoComplete ?? defaultAutoComplete}
                 className={inputClassName}
                 disabled={disabled}
+                name={inputProps.name ?? getDefaultInputName(inputId)}
                 readOnly={readOnly}
                 role="combobox"
                 type="text"
@@ -480,6 +483,12 @@ function DefaultSuggestion({ suggestion }: { suggestion: AddressSuggestion }) {
             {suggestion.secondaryText ? <small>{suggestion.secondaryText}</small> : null}
         </div>
     )
+}
+
+function getDefaultInputName(inputId: string): string {
+    const safeInputId = inputId.replace(/[^a-zA-Z0-9_-]/g, '')
+
+    return safeInputId ? `${defaultInputNamePrefix}-${safeInputId}` : defaultInputNamePrefix
 }
 
 function renderStatusMessage(

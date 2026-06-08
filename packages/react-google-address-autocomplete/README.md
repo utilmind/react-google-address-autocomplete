@@ -4,7 +4,7 @@ Reusable React address autocomplete component powered by Google Places Autocompl
 
 ## Status
 
-Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, and can customize the input value after a suggestion is selected. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
+Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, can customize the input value after a suggestion is selected, and uses browser-autofill-resistant input defaults. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider.
 
 ## Design decisions
 
@@ -111,6 +111,24 @@ By default, the dropdown is rendered inline under the input. For dialogs, modals
 ```
 
 When `dropdownPortal` is enabled, the dropdown is rendered into `document.body` by default and receives fixed-position inline styles that match the input's viewport position and width. Use `dropdownPortalContainer` to provide a custom container and `dropdownPortalOffset` to tune the vertical offset.
+
+## Browser autofill
+
+Chrome and other browsers can still show saved address/profile autofill UI over custom autocomplete widgets, even when `autocomplete="off"` is present. To reduce that interference, `AddressAutocompleteInput` defaults to `autoComplete="new-password"` and assigns a neutral generated `name` when the consumer does not pass one.
+
+You can still override both values when your application needs native browser autofill or a stable form field name:
+
+```tsx
+<AddressAutocompleteInput
+    autoComplete="street-address"
+    name="shipping-address"
+    provider={provider}
+    value={address}
+    onValueChange={setAddress}
+/>
+```
+
+For address-search use cases, keep the defaults unless you intentionally want the browser's saved-profile dropdown.
 
 ## Google provider
 

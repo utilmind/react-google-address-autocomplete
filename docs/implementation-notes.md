@@ -74,6 +74,12 @@ When portal rendering is enabled, the component:
 
 The component does not implement a focus trap. Dialog libraries should continue to own focus trapping and modal semantics.
 
+## Browser autofill policy
+
+The component is an address search box, not a personal-profile form field. Native browser address autofill can overlap the custom Places dropdown and select personal saved addresses that are unrelated to the data being edited.
+
+`autocomplete="off"` is not reliable enough for this use case because browsers may still offer saved-profile suggestions based on labels, names, and heuristics. The component therefore defaults the input to `autoComplete="new-password"` and provides a neutral generated `name` when the consumer does not pass one. This is a practical suppression strategy, not a browser-level guarantee. Consumers can still pass `autoComplete` and `name` explicitly when they want native autofill.
+
 ## Controlled value policy
 
 The component never owns the input text permanently. User typing is emitted through `onValueChange()`, and selected place details are emitted through `onAddressSelect()`. After a suggestion is selected, the component calls `onValueChange()` with either:

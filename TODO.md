@@ -64,6 +64,7 @@ This is the living implementation plan for the component repository. Update it o
 - [ ] Verify touch selection on mobile devices.
 - [x] Add first-pass loading, empty, and error states.
 - [x] Add basic disabled and read-only handling.
+- [x] Add browser-autofill-resistant defaults for custom address search inputs.
 - [ ] Add deeper disabled and read-only interaction tests.
 - [x] Add minimum query length.
 - [x] Add max suggestions limit.
@@ -121,6 +122,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document first-pass styling customization through class names and demo CSS.
 - [x] Document address result shape in the package README.
 - [x] Document form-fill usage and custom selected input values.
+- [x] Document browser autofill behavior and override options.
 - [ ] Document known limitations.
 
 ## 9. Release and npm publication
@@ -140,6 +142,8 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Link the legacy file from the root README.
 
 ## Open decisions
+
+- Browser autofill suppression is best effort. Keep monitoring Chrome/Safari behavior with real saved profiles.
 
 - Should `postalCodeFull` be added as a convenience field?
 - Should the provider expose a free-text geocode fallback, or should the component stay selection-only?

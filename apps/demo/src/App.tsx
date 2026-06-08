@@ -249,7 +249,13 @@ function FormTextInput({
     return (
         <label className="field form-field">
             <span>{label}</span>
-            <input className="input" value={value} onChange={(event) => onValueChange(event.currentTarget.value)} />
+            <input
+                autoComplete="new-password"
+                className="input"
+                name={`rgac-demo-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                value={value}
+                onChange={(event) => onValueChange(event.currentTarget.value)}
+            />
         </label>
     )
 }
