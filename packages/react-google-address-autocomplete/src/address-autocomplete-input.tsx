@@ -500,6 +500,10 @@ function AddressAutocompleteDropdown({
                               )}
                               role="option"
                               tabIndex={-1}
+                              onPointerDown={(event) => {
+                                  event.preventDefault()
+                                  void selectSuggestion(suggestion)
+                              }}
                               onClick={() => void selectSuggestion(suggestion)}
                               onMouseDown={(event) => event.preventDefault()}
                               onMouseEnter={() => setHighlightedIndex(index)}
