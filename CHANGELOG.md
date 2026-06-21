@@ -15,6 +15,7 @@ This project currently has no published npm release. The package version remains
 - Dropdown suggestions with keyboard, mouse, portal, loading, empty, and error states.
 - Optional highlighted-suggestion preview for Twitter Typeahead-style keyboard navigation.
 - Explicit provider-level `lookupAddress()` method for button-driven free-text lookup.
+- `preferredLocation` soft reranking to move suggestions matching existing city/state/country form values higher without filtering the rest.
 - Demo app with one-line, two-line, form-fill, portal, empty-state, and error-state examples.
 - Unit tests for parser, provider, loader, component interactions, portal rendering, and disabled/read-only behavior.
 
@@ -22,8 +23,9 @@ This project currently has no published npm release. The package version remains
 
 - Browser autofill suppression now defaults to `autoComplete="one-time-code"` with a neutral generated input name.
 - Loading rows are hidden by default and can be enabled with `showLoading`.
+- Form-fill demo now demonstrates `preferredLocation` with the separate city, state, and country fields.
 
 ### Documentation
 
 - Added split API reference for properties/options, rendering/styling options, events, provider methods, and helper functions.
-- Added Vite, Next.js, local package build, billing caveat, browser autofill, explicit lookup, and known limitation notes.
+- Added Vite, Next.js, local package build, billing caveat, browser autofill, explicit lookup, preferred-location reranking, and known limitation notes.

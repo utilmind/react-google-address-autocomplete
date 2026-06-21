@@ -5,6 +5,8 @@ export { createGooglePlacesAutocompleteProvider } from './google-places-provider
 export type {
     AddressAutocompleteInputProps,
     AddressAutocompletePortalContainer,
+    AddressAutocompletePreferredLocation,
+    AddressAutocompletePreferredLocationResolver,
     AddressAutocompleteProvider,
     AddressAutocompleteRenderSuggestionProps,
     AddressAutocompleteRequestOptions,

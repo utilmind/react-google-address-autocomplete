@@ -73,6 +73,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add deeper disabled and read-only interaction tests.
 - [x] Add minimum query length.
 - [x] Add max suggestions limit.
+- [x] Add preferred-location soft reranking for city/state/country form context.
 - [x] Add basic highlighted matched text rendering.
 - [x] Add first-pass ARIA combobox/listbox semantics and active descendant behavior.
 - [x] Add a first dedicated a11y pass for combobox/listbox IDs, `aria-controls`, `aria-expanded`, and `aria-activedescendant`.
@@ -98,6 +99,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Add a basic demo page.
 - [x] Add country restriction examples.
 - [x] Add a form-fill example that populates address, city, state, ZIP, country, latitude, and longitude.
+- [x] Demonstrate preferred-location reranking in the form-fill example.
 - [x] Add a button-driven explicit lookup example for separate address fields; no blur lookup.
 - [x] Polish the demo suggestion dropdown to be closer to the old Typeahead look.
 - [x] Add compact one-line suggestion rendering in the first demo.
@@ -142,6 +144,7 @@ This is the living implementation plan for the component repository. Update it o
 - [x] Document highlighted suggestion preview behavior.
 - [x] Document browser autofill behavior and override options.
 - [x] Document component props and provider request options.
+- [x] Document preferred-location soft reranking.
 - [x] Split the package README API reference into properties/options, events, and provider methods.
 - [x] Document known limitations.
 - [x] Document explicit free-text lookup behavior and clarify that blur does not trigger lookup.

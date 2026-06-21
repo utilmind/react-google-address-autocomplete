@@ -4,7 +4,7 @@ Reusable React address autocomplete component powered by Google Places Autocompl
 
 ## Status
 
-Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, can customize the input value after a suggestion is selected, hides loading UI by default, and uses browser-autofill-resistant input defaults. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider with an explicit free-text address lookup method powered by Places suggestions and Place details.
+Early implementation. The exported component renders a controlled input, fetches suggestions from a provider, shows a first-pass dropdown, supports mouse selection, supports basic keyboard navigation, can render the dropdown through a portal for dialogs/modals, can customize the input value after a suggestion is selected, can softly rerank suggestions by an existing city/state/country form context, hides loading UI by default, and uses browser-autofill-resistant input defaults. The package also includes the initial public types, a tested Google address parser, a browser Google Maps JavaScript loader, and a tested Google Places Autocomplete Data API provider with an explicit free-text address lookup method powered by Places suggestions and Place details.
 
 ## Design decisions
 
@@ -83,37 +83,68 @@ const provider = createGooglePlacesAutocompleteProvider({
 
 Input-level props win over provider defaults, so a reusable provider can still be overridden per field.
 
+## Soft-ranking suggestions by an existing form location
+
+When a form already has city, state, or country fields, pass them through `preferredLocation`. Matching suggestions are moved higher in the dropdown, while non-matching suggestions remain visible in their original Google order. This is intentionally a soft rerank, not a filter.
+
+```tsx
+<AddressAutocompleteInput
+    preferredLocation={{
+        city: form.city,
+        stateCode: form.state,
+        countryCode: 'US',
+    }}
+    provider={provider}
+    value={form.address}
+    onValueChange={(address) => setForm((current) => ({ ...current, address }))}
+/>
+```
+
+You can also pass a resolver function. Prefer an inline function or a memoized function whose dependencies include the fields it reads, so React can rerender with the newest preferred location.
+
+```tsx
+<AddressAutocompleteInput
+    preferredLocation={() => ({ city: form.city, state: form.state, country: form.country })}
+    provider={provider}
+    value={form.address}
+    onValueChange={(address) => setForm((current) => ({ ...current, address }))}
+/>
+```
+
+The preferred location object supports `city`, `state`, `stateCode`, `country`, and `countryCode`. Values are normalized internally for loose matching against suggestion text.
+
 ## Component API
 
 `AddressAutocompleteInput` is a controlled, headless component. It forwards most regular `<input>` props, except for props that would conflict with its controlled behavior (`value`, `onChange`, `type`, `className`, `children`, and `onSelect`).
 
 ### Properties and options
 
-| Prop                                 | Type                                               | Default                           | Description                                                                                       |
-| ------------------------------------ | -------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `value`                              | `string`                                           | required                          | Current input value.                                                                              |
-| `provider`                           | `AddressAutocompleteProvider`                      | `undefined`                       | Suggestion/details provider. Use `createGooglePlacesAutocompleteProvider()` for Google Places.    |
-| `label`                              | `ReactNode`                                        | `undefined`                       | Optional label rendered above the input and connected with `htmlFor`.                             |
-| `minQueryLength`                     | `number`                                           | `1`                               | Minimum trimmed query length before suggestions are fetched.                                      |
-| `debounceMs`                         | `number`                                           | `250`                             | Debounce delay before fetching suggestions.                                                       |
-| `maxSuggestions`                     | `number`                                           | `5`                               | Maximum suggestions rendered by the component after provider results return.                      |
-| `countryCodes`                       | `readonly string[]`                                | unrestricted                      | Restricts suggestions to countries such as `['US']`.                                              |
-| `includedPrimaryTypes`               | `readonly string[]`                                | `undefined`                       | Restricts Google predictions to primary place types when the provider supports it.                |
-| `language`                           | `string`                                           | provider/default browser behavior | Preferred language for suggestions.                                                               |
-| `region`                             | `string`                                           | provider/default browser behavior | Region hint used by Google for result formatting/ranking.                                         |
-| `locationBias`                       | `unknown`                                          | `undefined`                       | Biases suggestions toward an area when the provider supports it.                                  |
-| `locationRestriction`                | `unknown`                                          | `undefined`                       | Restricts suggestions to an area when the provider supports it.                                   |
-| `origin`                             | `{ lat: number; lng: number }`                     | `undefined`                       | Origin point for distance/ranking when the provider supports it.                                  |
-| `getSelectedAddressInputValue`       | `(address, suggestion) => string`                  | formatted address                 | Controls what text is committed to the input after selection. Useful for street-only form fields. |
-| `previewHighlightedSuggestion`       | `boolean`                                          | `false`                           | Shows the highlighted suggestion in the input during arrow-key navigation without committing it.  |
-| `getHighlightedSuggestionInputValue` | `(suggestion) => string`                           | suggestion full text              | Controls preview text when `previewHighlightedSuggestion` is enabled.                             |
-| `showLoading`                        | `boolean`                                          | `false`                           | Shows a loading row while suggestions are being fetched.                                          |
-| `loadingText`                        | `ReactNode`                                        | `Loading…`                        | Localizable fallback loading content.                                                             |
-| `dropdownPortal`                     | `boolean`                                          | `false`                           | Renders the dropdown through a portal, useful inside dialogs and clipped containers.              |
-| `dropdownPortalContainer`            | `HTMLElement \| null \| () => HTMLElement \| null` | `document.body`                   | Portal target when `dropdownPortal` is enabled.                                                   |
-| `dropdownPortalOffset`               | `number`                                           | `6`                               | Vertical offset between input and portal dropdown.                                                |
-| `autoComplete`                       | regular input prop                                 | `one-time-code`                   | Browser-autofill suppression value. Override only when native autofill is desired.                |
-| `name`                               | regular input prop                                 | generated neutral name            | Neutral generated name helps suppress browser profile autofill.                                   |
+| Prop                                 | Type                                                                                 | Default                           | Description                                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------------ | --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `value`                              | `string`                                                                             | required                          | Current input value.                                                                              |
+| `provider`                           | `AddressAutocompleteProvider`                                                        | `undefined`                       | Suggestion/details provider. Use `createGooglePlacesAutocompleteProvider()` for Google Places.    |
+| `label`                              | `ReactNode`                                                                          | `undefined`                       | Optional label rendered above the input and connected with `htmlFor`.                             |
+| `minQueryLength`                     | `number`                                                                             | `1`                               | Minimum trimmed query length before suggestions are fetched.                                      |
+| `debounceMs`                         | `number`                                                                             | `250`                             | Debounce delay before fetching suggestions.                                                       |
+| `maxSuggestions`                     | `number`                                                                             | `5`                               | Maximum suggestions rendered by the component after provider results return.                      |
+| `preferredLocation`                  | `AddressAutocompletePreferredLocation \| () => AddressAutocompletePreferredLocation` | `undefined`                       | Soft-ranks suggestions matching an already selected city, state, or country higher in the list.   |
+| `countryCodes`                       | `readonly string[]`                                                                  | unrestricted                      | Restricts suggestions to countries such as `['US']`.                                              |
+| `includedPrimaryTypes`               | `readonly string[]`                                                                  | `undefined`                       | Restricts Google predictions to primary place types when the provider supports it.                |
+| `language`                           | `string`                                                                             | provider/default browser behavior | Preferred language for suggestions.                                                               |
+| `region`                             | `string`                                                                             | provider/default browser behavior | Region hint used by Google for result formatting/ranking.                                         |
+| `locationBias`                       | `unknown`                                                                            | `undefined`                       | Biases suggestions toward an area when the provider supports it.                                  |
+| `locationRestriction`                | `unknown`                                                                            | `undefined`                       | Restricts suggestions to an area when the provider supports it.                                   |
+| `origin`                             | `{ lat: number; lng: number }`                                                       | `undefined`                       | Origin point for distance/ranking when the provider supports it.                                  |
+| `getSelectedAddressInputValue`       | `(address, suggestion) => string`                                                    | formatted address                 | Controls what text is committed to the input after selection. Useful for street-only form fields. |
+| `previewHighlightedSuggestion`       | `boolean`                                                                            | `false`                           | Shows the highlighted suggestion in the input during arrow-key navigation without committing it.  |
+| `getHighlightedSuggestionInputValue` | `(suggestion) => string`                                                             | suggestion full text              | Controls preview text when `previewHighlightedSuggestion` is enabled.                             |
+| `showLoading`                        | `boolean`                                                                            | `false`                           | Shows a loading row while suggestions are being fetched.                                          |
+| `loadingText`                        | `ReactNode`                                                                          | `Loading…`                        | Localizable fallback loading content.                                                             |
+| `dropdownPortal`                     | `boolean`                                                                            | `false`                           | Renders the dropdown through a portal, useful inside dialogs and clipped containers.              |
+| `dropdownPortalContainer`            | `HTMLElement \| null \| () => HTMLElement \| null`                                   | `document.body`                   | Portal target when `dropdownPortal` is enabled.                                                   |
+| `dropdownPortalOffset`               | `number`                                                                             | `6`                               | Vertical offset between input and portal dropdown.                                                |
+| `autoComplete`                       | regular input prop                                                                   | `one-time-code`                   | Browser-autofill suppression value. Override only when native autofill is desired.                |
+| `name`                               | regular input prop                                                                   | generated neutral name            | Neutral generated name helps suppress browser profile autofill.                                   |
 
 ### Rendering and styling options
 
@@ -194,6 +225,8 @@ The preview is visual component state. It does not call `onValueChange` until th
 
 Use `onAddressSelect` to copy structured place data into the rest of your form. By default, the input value becomes the selected place's formatted address. Use `getSelectedAddressInputValue` when your form should keep a different value in the autocomplete field, such as street address only.
 
+`preferredLocation` is useful in this form-fill pattern because the already-entered city, state, or country can help move the most likely matching address higher in the dropdown.
+
 ```tsx
 const [form, setForm] = useState({
     address: '',
@@ -210,11 +243,16 @@ const [form, setForm] = useState({
         selectedAddress.addressLine1 || selectedAddress.formattedAddress
     }
     label="Address"
+    preferredLocation={{
+        city: form.city,
+        state: form.state,
+        country: form.country,
+    }}
     provider={provider}
     value={form.address}
     onAddressSelect={(selectedAddress) => {
         setForm({
-            address: selectedAddress.addressLine1,
+            address: selectedAddress.addressLine1 || selectedAddress.formattedAddress,
             city: selectedAddress.city,
             state: selectedAddress.stateCode || selectedAddress.state,
             zip: selectedAddress.postalCodeSuffix
@@ -231,46 +269,28 @@ const [form, setForm] = useState({
 />
 ```
 
-## Explicit free-text address lookup
-
-The Google provider exposes `lookupAddress(query, options?)` for explicit lookup of a manually typed address. This is intentionally provider-level API, not automatic component behavior. Use it from a button such as “Lookup” or “Verify address” when the user clearly asks for lookup. The built-in Google provider implements this through the Places Autocomplete Data API plus Place details, not the separate Google Geocoding service.
+For explicit verification of a manually typed address, call `provider.lookupAddress()` from your own button or submit handler.
 
 ```tsx
-const [isLookupPending, setIsLookupPending] = useState(false)
-const [lookupError, setLookupError] = useState<string | null>(null)
+async function handleLookup() {
+    const query = [form.address, form.city, form.state, form.zip, form.country].filter(Boolean).join(', ')
+    const selectedAddress = await provider.lookupAddress?.(query)
 
-async function handleLookupClick() {
-    if (!provider.lookupAddress || !form.address.trim()) {
+    if (!selectedAddress) {
         return
     }
 
-    setIsLookupPending(true)
-    setLookupError(null)
-
-    try {
-        const selectedAddress = await provider.lookupAddress(
-            [form.address, form.city, form.state, form.zip, form.country].filter(Boolean).join(', '),
-        )
-
-        if (!selectedAddress) {
-            setLookupError('No matching address found.')
-            return
-        }
-
-        setForm({
-            address: selectedAddress.addressLine1 || selectedAddress.formattedAddress,
-            city: selectedAddress.city,
-            state: selectedAddress.stateCode || selectedAddress.state,
-            zip: selectedAddress.postalCodeSuffix
-                ? `${selectedAddress.postalCode}-${selectedAddress.postalCodeSuffix}`
-                : selectedAddress.postalCode,
-            country: selectedAddress.country || selectedAddress.countryCode,
-            latitude: selectedAddress.latitude?.toString() ?? '',
-            longitude: selectedAddress.longitude?.toString() ?? '',
-        })
-    } finally {
-        setIsLookupPending(false)
-    }
+    setForm({
+        address: selectedAddress.addressLine1 || selectedAddress.formattedAddress,
+        city: selectedAddress.city,
+        state: selectedAddress.stateCode || selectedAddress.state,
+        zip: selectedAddress.postalCodeSuffix
+            ? `${selectedAddress.postalCode}-${selectedAddress.postalCodeSuffix}`
+            : selectedAddress.postalCode,
+        country: selectedAddress.country || selectedAddress.countryCode,
+        latitude: selectedAddress.latitude?.toString() ?? '',
+        longitude: selectedAddress.longitude?.toString() ?? '',
+    })
 }
 ```
 

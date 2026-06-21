@@ -73,6 +73,16 @@ export interface AddressAutocompleteRenderSuggestionProps {
 
 export type AddressAutocompletePortalContainer = HTMLElement | null | (() => HTMLElement | null)
 
+export interface AddressAutocompletePreferredLocation {
+    city?: string | null
+    state?: string | null
+    stateCode?: string | null
+    country?: string | null
+    countryCode?: string | null
+}
+
+export type AddressAutocompletePreferredLocationResolver = () => AddressAutocompletePreferredLocation | null | undefined
+
 export interface AddressAutocompleteInputProps extends Omit<
     ComponentPropsWithoutRef<'input'>,
     'children' | 'className' | 'onChange' | 'onSelect' | 'type' | 'value'
@@ -95,6 +105,11 @@ export interface AddressAutocompleteInputProps extends Omit<
     minQueryLength?: number
     debounceMs?: number
     maxSuggestions?: number
+    /**
+     * Optional soft ranking hint. Suggestions matching this location are moved up,
+     * while non-matching suggestions remain visible in their original Google order.
+     */
+    preferredLocation?: AddressAutocompletePreferredLocation | AddressAutocompletePreferredLocationResolver | null
     countryCodes?: readonly string[]
     includedPrimaryTypes?: readonly string[]
     language?: string

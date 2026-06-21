@@ -4,7 +4,12 @@ import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AddressAutocompleteInput } from './address-autocomplete-input'
-import type { AddressAutocompleteProvider, AddressSuggestion, SelectedAddress } from './types'
+import type {
+    AddressAutocompletePreferredLocation,
+    AddressAutocompleteProvider,
+    AddressSuggestion,
+    SelectedAddress,
+} from './types'
 
 const mockSuggestion: AddressSuggestion = {
     placeId: 'place-1',
@@ -22,6 +27,16 @@ const secondMockSuggestion: AddressSuggestion = {
     secondaryText: 'Tampa, FL, USA',
     fullText: '13133 USF Laurel Drive, Tampa, FL, USA',
     mainTextMatches: [{ startOffset: 0, endOffset: 5 }],
+    fullTextMatches: [],
+    types: ['street_address'],
+}
+
+const cheshireMockSuggestion: AddressSuggestion = {
+    placeId: 'place-3',
+    mainText: '327 Sandbank Road',
+    secondaryText: 'Cheshire, CT, USA',
+    fullText: '327 Sandbank Road, Cheshire, CT, USA',
+    mainTextMatches: [{ startOffset: 0, endOffset: 3 }],
     fullTextMatches: [],
     types: ['street_address'],
 }
@@ -53,6 +68,7 @@ function StatefulAddressInput({
     loadingText,
     renderLoading,
     countryCodes,
+    preferredLocation,
     disabled,
     readOnly,
 }: {
@@ -66,6 +82,7 @@ function StatefulAddressInput({
     loadingText?: string
     renderLoading?: () => string
     countryCodes?: readonly string[]
+    preferredLocation?: AddressAutocompletePreferredLocation | (() => AddressAutocompletePreferredLocation | null)
     disabled?: boolean
     readOnly?: boolean
 }) {
@@ -75,6 +92,7 @@ function StatefulAddressInput({
         <AddressAutocompleteInput
             debounceMs={0}
             countryCodes={countryCodes}
+            preferredLocation={preferredLocation}
             disabled={disabled}
             dropdownPortal={dropdownPortal}
             label="Address"
@@ -105,6 +123,14 @@ function createMockProvider(): AddressAutocompleteProvider {
 function createTwoSuggestionMockProvider(): AddressAutocompleteProvider {
     return {
         getSuggestions: vi.fn(async () => [mockSuggestion, secondMockSuggestion]),
+        selectSuggestion: vi.fn(async () => mockSelectedAddress),
+        resetSession: vi.fn(),
+    }
+}
+
+function createMixedLocationMockProvider(): AddressAutocompleteProvider {
+    return {
+        getSuggestions: vi.fn(async () => [secondMockSuggestion, cheshireMockSuggestion, mockSuggestion]),
         selectSuggestion: vi.fn(async () => mockSelectedAddress),
         resetSession: vi.fn(),
     }
@@ -221,6 +247,47 @@ describe('AddressAutocompleteInput', () => {
         await screen.findByRole('option', { name: /13133 34th Street North/i })
 
         expect(provider.getSuggestions).toHaveBeenCalledWith('13133', expect.objectContaining({ countryCodes: ['US'] }))
+    })
+
+    it('moves suggestions matching the preferred city and state higher without filtering the rest', async () => {
+        const user = userEvent.setup()
+        const provider = createMixedLocationMockProvider()
+
+        render(
+            <StatefulAddressInput
+                preferredLocation={{ city: 'Cheshire', stateCode: 'CT', countryCode: 'US' }}
+                provider={provider}
+            />,
+        )
+
+        await user.type(screen.getByLabelText('Address'), '327')
+
+        const options = await screen.findAllByRole('option')
+
+        expect(options.map((option) => option.textContent)).toEqual([
+            expect.stringContaining('327 Sandbank Road'),
+            expect.stringContaining('13133 USF Laurel Drive'),
+            expect.stringContaining('13133 34th Street North'),
+        ])
+    })
+
+    it('accepts a preferred-location resolver function', async () => {
+        const user = userEvent.setup()
+        const provider = createMixedLocationMockProvider()
+
+        render(
+            <StatefulAddressInput
+                preferredLocation={() => ({ city: 'Cheshire', state: 'Connecticut', country: 'United States' })}
+                provider={provider}
+            />,
+        )
+
+        await user.type(screen.getByLabelText('Address'), '327')
+
+        const [firstOption] = await screen.findAllByRole('option')
+
+        expect(firstOption).toBeDefined()
+        expect(firstOption?.textContent).toContain('Cheshire, CT, USA')
     })
 
     it('selects a suggestion with the mouse', async () => {

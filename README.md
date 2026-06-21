@@ -14,7 +14,7 @@ This repository is in early implementation. The current package includes:
 - keyboard navigation for ArrowUp, ArrowDown, Enter, Escape, and Tab;
 - optional Twitter Typeahead-style highlighted suggestion preview in the input;
 - optional dropdown portal rendering for dialogs/modals;
-- form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude, with worldwide or US-only search restrictions depending on the demo field;
+- form-fill demo that maps a selected place to address, city, state, ZIP, country, latitude, and longitude, with worldwide or US-only search restrictions and soft city/state/country suggestion reranking depending on the demo field;
 - dark themed demo dropdown styling with Lucide-style map-pin and map-pin-search icons, loading spinner, and themed scrollbars;
 - browser-autofill-resistant defaults for address search inputs;
 - optional loading row rendering, hidden by default;
@@ -46,7 +46,7 @@ Suggestions are worldwide by default. To restrict a field to the United States, 
 <AddressAutocompleteInput countryCodes={['US']} provider={provider} value={address} onValueChange={setAddress} />
 ```
 
-The package README contains the full prop reference, including request options, render props, portal dropdown options, explicit lookup behavior, and loading-state props: [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md).
+The package README contains the full prop reference, including request options, `preferredLocation` soft reranking, render props, portal dropdown options, explicit lookup behavior, and loading-state props: [`packages/react-google-address-autocomplete/README.md`](./packages/react-google-address-autocomplete/README.md).
 
 ## Development
 

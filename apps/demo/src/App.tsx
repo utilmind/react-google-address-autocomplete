@@ -153,7 +153,10 @@ export default function App() {
                         the selected Google Place result.
                     </p>
 
-                    <p className="summary">Two-line suggestions, no “Loading” row, worldwide.</p>
+                    <p className="summary">
+                        Two-line suggestions, no “Loading” row, worldwide, softly reranked by the filled city, state,
+                        and country fields.
+                    </p>
 
                     <div className="form-grid">
                         <div className="field form-field form-field-wide addressLookupField">
@@ -173,6 +176,11 @@ export default function App() {
                                     placeholder="Start typing a street address"
                                     previewHighlightedSuggestion
                                     provider={formProvider}
+                                    preferredLocation={{
+                                        city: formFields.city,
+                                        state: formFields.state,
+                                        country: formFields.country,
+                                    }}
                                     statusMessageClassName="statusMessage"
                                     suggestionClassName="suggestion formSuggestion"
                                     value={formFields.address}
