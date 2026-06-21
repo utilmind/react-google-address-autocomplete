@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 
 import type {
     AddressAutocompleteInputProps,
+    AddressAutocompletePreferredLocation,
     AddressAutocompleteRequestOptions,
     AddressAutocompleteSlotState,
     AddressAutocompleteStatus,
@@ -16,7 +17,7 @@ const defaultMaxSuggestions = 5
 const defaultMinQueryLength = 1
 const defaultDropdownPortalOffset = 6
 const defaultAutoComplete = 'one-time-code'
-const defaultInputNamePrefix = 'rgac-address-search'
+const defaultInputNamePrefix = 'rgac-address-search' // react-google-address-autocomplete...
 
 interface DropdownPosition {
     left: number
@@ -41,6 +42,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         minQueryLength = defaultMinQueryLength,
         debounceMs = defaultDebounceMs,
         maxSuggestions = defaultMaxSuggestions,
+        preferredLocation,
         countryCodes,
         includedPrimaryTypes,
         language,
@@ -93,7 +95,6 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
     const isInteractive = !disabled && !readOnly
     const displayedValue = previewValue ?? value
     const trimmedValue = value.trim()
-
     const requestOptions = useMemo<AddressAutocompleteRequestOptions>(
         () => ({
             countryCodes,
@@ -131,11 +132,15 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         }
 
         const rect = input.getBoundingClientRect()
-        setDropdownPosition({
+        const nextPosition: DropdownPosition = {
             left: rect.left,
             top: rect.bottom + normalizedDropdownPortalOffset,
             width: rect.width,
-        })
+        }
+
+        setDropdownPosition((previousPosition) =>
+            areDropdownPositionsEqual(previousPosition, nextPosition) ? previousPosition : nextPosition,
+        )
     }, [normalizedDropdownPortalOffset])
 
     useEffect(() => {
@@ -190,7 +195,11 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                         return
                     }
 
-                    const limitedSuggestions = nextSuggestions.slice(0, normalizedMaxSuggestions)
+                    const limitedSuggestions = rankSuggestionsByPreferredLocation(
+                        nextSuggestions,
+                        resolvePreferredLocation(preferredLocation),
+                    ).slice(0, normalizedMaxSuggestions)
+                    updateDropdownPosition()
                     setSuggestions(limitedSuggestions)
                     setPreviewValue(null)
                     setHighlightedIndex(limitedSuggestions.length ? 0 : -1)
@@ -201,6 +210,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                         return
                     }
 
+                    updateDropdownPosition()
                     setSuggestions([])
                     setPreviewValue(null)
                     setHighlightedIndex(-1)
@@ -220,7 +230,9 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         normalizedDebounceMs,
         provider,
         requestOptions,
+        preferredLocation,
         trimmedValue,
+        updateDropdownPosition,
     ])
 
     const closeDropdown = useCallback(() => {
@@ -232,6 +244,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         setHighlightedIndex(-1)
         setPreviewValue(null)
         setError(null)
+        setDropdownPosition(null)
     }, [provider])
 
     const selectSuggestion = useCallback(
@@ -258,12 +271,21 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
                 setHighlightedIndex(-1)
                 setPreviewValue(null)
             } catch (reason) {
+                updateDropdownPosition()
                 setError(toError(reason))
                 setStatus('error')
                 setIsDropdownOpen(true)
             }
         },
-        [disabled, getSelectedAddressInputValue, onAddressSelect, onValueChange, provider, readOnly],
+        [
+            disabled,
+            getSelectedAddressInputValue,
+            onAddressSelect,
+            onValueChange,
+            provider,
+            readOnly,
+            updateDropdownPosition,
+        ],
     )
 
     const getSuggestionPreviewValue = useCallback(
@@ -292,6 +314,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         onFocus?.(event)
 
         if (!event.defaultPrevented && isInteractive) {
+            updateDropdownPosition()
             setIsDropdownOpen(true)
         }
     }
@@ -351,6 +374,7 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         onValueChange(nextValue)
 
         if (isInteractive) {
+            updateDropdownPosition()
             setIsDropdownOpen(true)
 
             if (provider && nextTrimmedValue.length >= normalizedMinQueryLength) {
@@ -366,8 +390,10 @@ export function AddressAutocompleteInput(props: AddressAutocompleteInputProps) {
         }
     }
 
+    const isDropdownPositionReady = !shouldRenderDropdownPortal || dropdownPosition !== null
+    const shouldRenderVisibleDropdown = shouldRenderDropdown && isDropdownPositionReady
     const hasActiveDescendant = shouldRenderDropdown && highlightedIndex >= 0 && Boolean(suggestions[highlightedIndex])
-    const dropdown = shouldRenderDropdown ? (
+    const dropdown = shouldRenderVisibleDropdown ? (
         <AddressAutocompleteDropdown
             dropdownClassName={dropdownClassName}
             error={error}
@@ -500,10 +526,6 @@ function AddressAutocompleteDropdown({
                               )}
                               role="option"
                               tabIndex={-1}
-                              onPointerDown={(event) => {
-                                  event.preventDefault()
-                                  void selectSuggestion(suggestion)
-                              }}
                               onClick={() => void selectSuggestion(suggestion)}
                               onMouseDown={(event) => event.preventDefault()}
                               onMouseEnter={() => setHighlightedIndex(index)}
@@ -565,8 +587,18 @@ function getDropdownStyle(
         right: 'auto',
         bottom: 'auto',
         width: dropdownPosition.width,
+        pointerEvents: 'auto',
         ...dropdownStyle,
     }
+}
+
+function areDropdownPositionsEqual(previousPosition: DropdownPosition | null, nextPosition: DropdownPosition): boolean {
+    return (
+        previousPosition !== null &&
+        previousPosition.left === nextPosition.left &&
+        previousPosition.top === nextPosition.top &&
+        previousPosition.width === nextPosition.width
+    )
 }
 
 function resolvePortalContainer(
@@ -613,24 +645,108 @@ function renderMatchedText(text: string, matches: readonly AddressTextMatch[]) {
     return fragments
 }
 
+function resolvePreferredLocation(
+    preferredLocation: AddressAutocompleteInputProps['preferredLocation'],
+): AddressAutocompletePreferredLocation | null {
+    const resolved = typeof preferredLocation === 'function' ? preferredLocation() : preferredLocation
+
+    if (!resolved) {
+        return null
+    }
+
+    const city = resolved.city?.trim() ?? ''
+    const state = resolved.state?.trim() ?? ''
+    const stateCode = resolved.stateCode?.trim() ?? ''
+    const country = resolved.country?.trim() ?? ''
+    const countryCode = resolved.countryCode?.trim() ?? ''
+
+    return city || state || stateCode || country || countryCode
+        ? {
+              city,
+              state,
+              stateCode,
+              country,
+              countryCode,
+          }
+        : null
+}
+
+function rankSuggestionsByPreferredLocation(
+    suggestions: readonly AddressSuggestion[],
+    preferredLocation: AddressAutocompletePreferredLocation | null,
+): readonly AddressSuggestion[] {
+    return preferredLocation
+        ? suggestions
+              .map((suggestion, index) => ({
+                  index,
+                  score: getPreferredLocationScore(suggestion, preferredLocation),
+                  suggestion,
+              }))
+              .sort((a, b) => b.score - a.score || a.index - b.index)
+              .map((item) => item.suggestion)
+        : suggestions
+}
+
+function getPreferredLocationScore(
+    suggestion: AddressSuggestion,
+    preferredLocation: AddressAutocompletePreferredLocation,
+): number {
+    const suggestionText = normalizeLocationSearchText(`${suggestion.secondaryText} ${suggestion.fullText}`)
+    const matchesCity = matchesLooseLocationText(suggestionText, preferredLocation.city)
+    const matchesState =
+        matchesLooseLocationText(suggestionText, preferredLocation.state) ||
+        matchesLocationToken(suggestionText, preferredLocation.stateCode)
+    const matchesCountry =
+        matchesLooseLocationText(suggestionText, preferredLocation.country) ||
+        matchesLocationToken(suggestionText, preferredLocation.countryCode)
+
+    let score = 0
+    if (matchesCity) {
+        score += 6
+    }
+    if (matchesState) {
+        score += 3
+    }
+    if (matchesCountry) {
+        score += 1
+    }
+
+    return score
+}
+
+function matchesLooseLocationText(normalizedText: string, value: string | null | undefined): boolean {
+    const normalizedValue = normalizeLocationSearchText(value ?? '')
+
+    return normalizedValue ? normalizedText.includes(normalizedValue) : false
+}
+
+function matchesLocationToken(normalizedText: string, value: string | null | undefined): boolean {
+    const normalizedValue = normalizeLocationSearchText(value ?? '')
+    if (!normalizedValue) {
+        return false
+    }
+
+    return new RegExp(`(^|\\s)${escapeRegExp(normalizedValue)}(\\s|$)`).test(normalizedText)
+}
+
+function normalizeLocationSearchText(value: string): string {
+    return value.trim().toLowerCase().replace(/[.,]/g, ' ').replace(/\s+/g, ' ')
+}
+
+function escapeRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function shouldShowDropdownForStatus(status: AddressAutocompleteStatus, showLoading: boolean): boolean {
     return status === 'open' || status === 'empty' || status === 'error' || (status === 'loading' && showLoading)
 }
 
 function getNextHighlightedIndex(currentIndex: number, suggestionCount: number): number {
-    if (!suggestionCount) {
-        return -1
-    }
-
-    return currentIndex >= suggestionCount - 1 ? 0 : currentIndex + 1
+    return suggestionCount ? (currentIndex >= suggestionCount - 1 ? 0 : currentIndex + 1) : -1
 }
 
 function getPreviousHighlightedIndex(currentIndex: number, suggestionCount: number): number {
-    if (!suggestionCount) {
-        return -1
-    }
-
-    return currentIndex <= 0 ? suggestionCount - 1 : currentIndex - 1
+    return suggestionCount ? (currentIndex <= 0 ? suggestionCount - 1 : currentIndex - 1) : -1
 }
 
 function getSuggestionId(listboxId: string, index: number): string {
@@ -646,11 +762,9 @@ function normalizePositiveInteger(value: number, fallback: number): number {
 }
 
 function toError(value: unknown): Error {
-    if (value instanceof Error) {
-        return value
-    }
-
-    return new Error(typeof value === 'string' ? value : 'Unknown address autocomplete error')
+    return value instanceof Error
+        ? value
+        : new Error(typeof value === 'string' ? value : 'Unknown address autocomplete error')
 }
 
 function joinClassNames(...classes: readonly (string | false | null | undefined)[]): string | undefined {
