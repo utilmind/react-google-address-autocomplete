@@ -284,8 +284,10 @@ describe('AddressAutocompleteInput', () => {
 
         await user.type(screen.getByLabelText('Address'), '327')
 
-        const firstOption = (await screen.findAllByRole('option'))[0]
-        expect(firstOption.textContent).toContain('Cheshire, CT, USA')
+        const [firstOption] = await screen.findAllByRole('option')
+
+        expect(firstOption).toBeDefined()
+        expect(firstOption?.textContent).toContain('Cheshire, CT, USA')
     })
 
     it('selects a suggestion with the mouse', async () => {
